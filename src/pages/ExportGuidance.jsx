@@ -189,7 +189,7 @@ const ExportGuidance = ({ onNavigate }) => {
                                         return (
                                           <a
                                             key={doc}
-                                            href={isExternal ? resourceLinks[doc] : `http://localhost:5000/api/documents/template/${encodeURIComponent(doc)}?t=${Date.now()}`}
+                                            href={isExternal ? resourceLinks[doc] : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/api/documents/template/${encodeURIComponent(doc)}?t=${Date.now()}`}
                                             target="_blank"
                                             rel="noreferrer"
                                             style={{ display: "flex", alignItems: "center", gap: 6, background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 8, padding: "8px 14px", fontSize: 13, color: "#1E6FD9", fontWeight: 600, cursor: "pointer", transition: "all 0.2s", textDecoration: "none" }}

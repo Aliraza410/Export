@@ -334,7 +334,7 @@ const Documents = ({ onNavigate }) => {
                     <Badge color={doc.color || "blue"}>{doc.status}</Badge>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button
-                        onClick={() => doc.fileUrl && window.open(`http://localhost:5000${doc.fileUrl}`, '_blank')}
+                        onClick={() => doc.fileUrl && window.open(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${doc.fileUrl}`, '_blank')}
                         style={{ padding: "6px 10px", background: "white", border: "1px solid #E5E7EB", borderRadius: 7, cursor: doc.fileUrl ? "pointer" : "not-allowed", color: "#374151", fontFamily: "inherit", opacity: doc.fileUrl ? 1 : 0.5 }}
                         title="View Document"
                       >
@@ -344,7 +344,7 @@ const Documents = ({ onNavigate }) => {
                         onClick={async () => {
                           if (doc.fileUrl) {
                             try {
-                              const response = await fetch(`http://localhost:5000${doc.fileUrl}`);
+                              const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${doc.fileUrl}`);
                               const blob = await response.blob();
                               const url = window.URL.createObjectURL(blob);
                               const link = document.createElement('a');
@@ -570,7 +570,7 @@ const Documents = ({ onNavigate }) => {
                     {step.type === "upload" && (
                       <div style={{ marginLeft: 30, marginTop: 8, display: "flex", gap: 16, alignItems: "center" }}>
                         {isChecked && fileUrl && (
-                          <a href={`http://localhost:5000${fileUrl}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "#1E6FD9", fontWeight: 500, textDecoration: "underline" }}>View Evidence</a>
+                          <a href={`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${fileUrl}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "#1E6FD9", fontWeight: 500, textDecoration: "underline" }}>View Evidence</a>
                         )}
                         <label style={{ fontSize: 12, color: "#374151", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, background: "white", padding: "6px 12px", border: "1px solid #E5E7EB", borderRadius: 6, fontWeight: 500 }}>
                           <input type="file" onChange={(e) => handleEvidenceUpload(selectedReg.type, step.id, e.target.files[0])} style={{ display: "none" }} />

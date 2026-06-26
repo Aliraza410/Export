@@ -168,7 +168,7 @@ const AdminPanel = ({ onNavigate }) => {
                         <td style={{ padding: "12px 16px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             {user.profilePic ? (
-                              <img src={user.profilePic.startsWith('http') ? user.profilePic : `http://localhost:5000${user.profilePic.startsWith('/') ? '' : '/'}${user.profilePic}`} alt={user.name} style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=1E6FD9&color=fff`; }} referrerPolicy="no-referrer" />
+                              <img src={user.profilePic.startsWith('http') ? user.profilePic : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${user.profilePic.startsWith('/') ? '' : '/'}${user.profilePic}`} alt={user.name} style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=1E6FD9&color=fff`; }} referrerPolicy="no-referrer" />
                             ) : (
                               <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1E6FD9", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700 }}>{user.name.split(" ").map(n => n[0]).join("")}</div>
                             )}
@@ -642,7 +642,7 @@ const AdminPanel = ({ onNavigate }) => {
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
                     {selectedUser.profilePic ? (
-                      <img src={selectedUser.profilePic.startsWith('http') ? selectedUser.profilePic : `http://localhost:5000${selectedUser.profilePic.startsWith('/') ? '' : '/'}${selectedUser.profilePic}`} alt={selectedUser.name} style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover" }} onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedUser.name)}&background=1E6FD9&color=fff`; }} referrerPolicy="no-referrer" />
+                      <img src={selectedUser.profilePic.startsWith('http') ? selectedUser.profilePic : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${selectedUser.profilePic.startsWith('/') ? '' : '/'}${selectedUser.profilePic}`} alt={selectedUser.name} style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover" }} onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedUser.name)}&background=1E6FD9&color=fff`; }} referrerPolicy="no-referrer" />
                     ) : (
                       <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#1E6FD9", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700 }}>
                         {selectedUser.name.split(" ").map(n => n[0]).join("")}

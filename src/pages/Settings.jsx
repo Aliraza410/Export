@@ -142,7 +142,7 @@ const Settings = ({ onNavigate }) => {
                       {previewPic ? (
                         <img src={previewPic} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       ) : user.profilePic ? (
-                        <img src={user.profilePic.startsWith('http') ? user.profilePic : `http://localhost:5000${user.profilePic.startsWith('/') ? '' : '/'}${user.profilePic}`} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} referrerPolicy="no-referrer" />
+                        <img src={user.profilePic.startsWith('http') ? user.profilePic : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${user.profilePic.startsWith('/') ? '' : '/'}${user.profilePic}`} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} referrerPolicy="no-referrer" />
                       ) : (
                         <Icon name="user" size={32} color="#94A3B8" />
                       )}

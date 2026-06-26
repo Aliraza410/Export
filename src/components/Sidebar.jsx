@@ -162,7 +162,7 @@ const Sidebar = ({ active, onNavigate, collapsed, setCollapsed }) => {
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1E6FD9", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: 12, flexShrink: 0, overflow: "hidden" }}>
                   {user?.profilePic ? (
-                    <img src={user.profilePic.startsWith('http') ? user.profilePic : `http://localhost:5000${user.profilePic.startsWith('/') ? '' : '/'}${user.profilePic}`} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} referrerPolicy="no-referrer" />
+                    <img src={user.profilePic.startsWith('http') ? user.profilePic : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${user.profilePic.startsWith('/') ? '' : '/'}${user.profilePic}`} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} referrerPolicy="no-referrer" />
                   ) : (
                     getInitials(user?.name)
                   )}
