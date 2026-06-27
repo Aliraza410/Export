@@ -8,7 +8,7 @@ const AnimatedNavLink = ({ href, children, isScrolled }) => {
   const textSizeClass = 'text-sm font-medium';
 
   return (
-    <a href={href} className={`group relative inline-block overflow-hidden h-5 flex items-center ${textSizeClass}`}>
+    <a href={href} className={`group relative inline-flex overflow-hidden h-5 items-center whitespace-nowrap ${textSizeClass}`}>
       <div className="flex flex-col transition-transform duration-400 ease-out transform group-hover:-translate-y-1/2">
         <span className={`transition-colors duration-300 ${defaultTextColor}`}>{children}</span>
         <span className={`transition-colors duration-300 ${hoverTextColor}`}>{children}</span>
@@ -60,12 +60,12 @@ export function Navbar({ onNavigate }) {
 
   const logoColor = isScrolled ? "#0A1628" : "white";
   const logoElement = (
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }} className="flex-shrink-0">
       <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#1E6FD9,#0EA5E9)", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" /></svg>
       </div>
       <div>
-        <span style={{ fontWeight: 800, fontSize: 16, color: logoColor, letterSpacing: "-0.02em", transition: "color 0.3s" }}>ExportEase</span>
+        <span style={{ fontWeight: 800, fontSize: 16, color: logoColor, letterSpacing: "-0.02em", transition: "color 0.3s", whiteSpace: "nowrap" }}>ExportEase</span>
       </div>
     </div>
   );
@@ -88,30 +88,30 @@ export function Navbar({ onNavigate }) {
   };
 
   const loginButtonElement = isSignedIn ? (
-    <button onClick={handleSignOut} className={`px-4 py-2 sm:px-3 text-xs sm:text-sm border font-medium rounded-full transition-colors duration-300 w-full sm:w-auto shadow-sm ${loginBtnClasses}`}>
+    <button onClick={handleSignOut} className={`px-4 py-2 sm:px-3 text-xs sm:text-sm border font-medium rounded-full transition-colors duration-300 w-full sm:w-auto shadow-sm whitespace-nowrap ${loginBtnClasses}`}>
       Sign Out
     </button>
   ) : (
-    <button onClick={() => onNavigate && onNavigate("login")} className={`px-4 py-2 sm:px-3 text-xs sm:text-sm border font-medium rounded-full transition-colors duration-300 w-full sm:w-auto shadow-sm ${loginBtnClasses}`}>
+    <button onClick={() => onNavigate && onNavigate("login")} className={`px-4 py-2 sm:px-3 text-xs sm:text-sm border font-medium rounded-full transition-colors duration-300 w-full sm:w-auto shadow-sm whitespace-nowrap ${loginBtnClasses}`}>
       Sign In
     </button>
   );
 
   const signupButtonElement = isSignedIn ? (
-    <div className="relative group w-full sm:w-auto">
-       <button onClick={() => onNavigate && onNavigate("dashboard")} className="relative z-10 px-4 py-2 sm:px-3 text-xs sm:text-sm font-semibold text-white bg-[#1E6FD9] rounded-full hover:bg-blue-700 transition-all duration-200 w-full sm:w-auto shadow-sm">
+    <div className="relative group w-full sm:w-auto flex-shrink-0">
+       <button onClick={() => onNavigate && onNavigate("dashboard")} className="relative z-10 px-4 py-2 sm:px-3 text-xs sm:text-sm font-semibold text-white bg-[#1E6FD9] rounded-full hover:bg-blue-700 transition-all duration-200 w-full sm:w-auto shadow-sm whitespace-nowrap">
          Dashboard
        </button>
     </div>
   ) : (
-    <div className="relative group w-full sm:w-auto">
+    <div className="relative group w-full sm:w-auto flex-shrink-0">
        <div className="absolute inset-0 -m-2 rounded-full
                      hidden sm:block
                      bg-blue-100
                      opacity-40 filter blur-lg pointer-events-none
                      transition-all duration-300 ease-out
                      group-hover:opacity-60 group-hover:blur-xl group-hover:-m-3"></div>
-       <button onClick={() => onNavigate && onNavigate("signup")} className="relative z-10 px-4 py-2 sm:px-3 text-xs sm:text-sm font-semibold text-white bg-[#1E6FD9] rounded-full hover:bg-blue-700 transition-all duration-200 w-full sm:w-auto shadow-sm">
+       <button onClick={() => onNavigate && onNavigate("signup")} className="relative z-10 px-4 py-2 sm:px-3 text-xs sm:text-sm font-semibold text-white bg-[#1E6FD9] rounded-full hover:bg-blue-700 transition-all duration-200 w-full sm:w-auto shadow-sm whitespace-nowrap">
          Get Started
        </button>
     </div>
