@@ -65,3 +65,11 @@ model RegistrationProgress {
   
   @@unique([userId, type])
 }
+
+model UploadedFile {
+  id        String   @id @default(uuid())
+  filename  String   @unique
+  data      Bytes
+  mimetype  String?
+  createdAt DateTime @default(now())
+}

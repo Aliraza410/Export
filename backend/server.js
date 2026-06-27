@@ -27,7 +27,33 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+
+app.get('/uploads/:filename', async (req, res) => {
+  try {
+    const file = await prisma.uploadedFile.findUnique({
+      where: { filename: req.params.filename }
+    });
+    if (!file) {
+      const localPath = path.join('uploads', req.params.filename);
+      if (fs.existsSync(localPath)) return res.sendFile(path.resolve(localPath));
+      return res.status(404).send('File not found');
+    }
+    
+    if (file.mimetype) {
+      res.setHeader('Content-Type', file.mimetype);
+    } else {
+      const ext = path.extname(file.filename).toLowerCase();
+      if (ext === '.pdf') res.setHeader('Content-Type', 'application/pdf');
+      else if (ext === '.png') res.setHeader('Content-Type', 'image/png');
+      else if (ext === '.jpg' || ext === '.jpeg') res.setHeader('Content-Type', 'image/jpeg');
+      else if (ext === '.doc' || ext === '.docx') res.setHeader('Content-Type', 'application/msword');
+    }
+    
+    res.send(file.data);
+  } catch (error) {
+    res.status(500).send('Error retrieving file');
+  }
+});
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
@@ -168,6 +194,10 @@ app.put('/api/user/profile', authMiddleware, upload.single('profilePic'), async 
     let updateData = { name };
     if (req.file) {
       updateData.profilePic = `/uploads/${req.file.filename}`;
+      const fileData = fs.readFileSync(req.file.path);
+      await prisma.uploadedFile.create({
+        data: { filename: req.file.filename, data: fileData, mimetype: req.file.mimetype }
+      });
     }
     const updatedUser = await prisma.user.update({
       where: { id: req.user.id },
@@ -1035,6 +1065,11 @@ app.post('/api/documents/generate', authMiddleware, async (req, res) => {
         const stats = fs.statSync(filePath);
         const sizeInKb = (stats.size / 1024).toFixed(1);
 
+        const fileData = fs.readFileSync(filePath);
+        await prisma.uploadedFile.create({
+          data: { filename, data: fileData, mimetype: 'application/pdf' }
+        });
+
         const newDoc = await prisma.document.create({
           data: {
             userId: req.user.id,
@@ -1060,6 +1095,11 @@ app.post('/api/documents/upload', authMiddleware, upload.single('file'), async (
   try {
     const file = req.file;
     if (!file) return res.status(400).json({ error: 'No file uploaded' });
+
+    const fileData = fs.readFileSync(file.path);
+    await prisma.uploadedFile.create({
+      data: { filename: file.filename, data: fileData, mimetype: file.mimetype }
+    });
 
     const newDoc = await prisma.document.create({
       data: {
@@ -1208,6 +1248,10 @@ app.post('/api/registrations/upload', authMiddleware, (req, res) => {
       if (!req.file) return res.status(400).json({ error: 'No file provided' });
 
       const fileUrl = `/uploads/${req.file.filename}`;
+      const fileData = fs.readFileSync(req.file.path);
+      await prisma.uploadedFile.create({
+        data: { filename: req.file.filename, data: fileData, mimetype: req.file.mimetype }
+      });
 
       let reg = await prisma.registrationProgress.findUnique({
         where: { userId_type: { userId: req.user.id, type: type } }
