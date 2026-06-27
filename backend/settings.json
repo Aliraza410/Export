@@ -1,0 +1,314 @@
+{
+  "insuranceRate": 0.015,
+  "baseDocCost": 25000,
+  "foodDocCostExtra": 12000,
+  "medicalDocCostExtra": 18000,
+  "defaultTariff": 0.06,
+  "exportGuidancePhases": [
+    {
+      "num": "01",
+      "title": "Setup Your Business ",
+      "color": "#10B981",
+      "bg": "#ECFDF5",
+      "steps": [
+        {
+          "title": "Business Registration",
+          "done": false,
+          "desc": "Register your business as a Sole Proprietorship, Partnership, or Private Limited Company. This makes your business legal and is the first step to exporting.",
+          "docs": [
+            "SECP Registration Guide"
+          ]
+        },
+        {
+          "title": "Get a National Tax Number (NTN)",
+          "done": false,
+          "desc": "Apply for an NTN from the Federal Board of Revenue (FBR) online using the IRIS portal. Your NTN is your main identity for all tax and export purposes.",
+          "docs": [
+            "NTN Application"
+          ]
+        },
+        {
+          "title": "Open a Business Bank Account",
+          "done": false,
+          "desc": "Open a bank account in your exact business name. You will need this to receive foreign currency payments from your international buyers.",
+          "docs": [
+            "Bank Account Setup Guide"
+          ]
+        },
+        {
+          "title": "Sales Tax Registration (STRN)",
+          "done": false,
+          "desc": "Register for Sales Tax with the FBR to get your STRN. This is important for tax refunds and is required for exporting many types of goods.",
+          "docs": [
+            "STRN Application"
+          ]
+        },
+        {
+          "title": "Join a Chamber of Commerce",
+          "done": false,
+          "desc": "Become a member of your local Chamber of Commerce (like KCCI or LCCI) or a relevant trade association. You will need them to issue 'Certificates of Origin' later.",
+          "docs": [
+            "Chamber Membership Form"
+          ]
+        },
+        {
+          "title": "Register on Pakistan Single Window (PSW)",
+          "done": false,
+          "desc": "Sign up on the PSW portal. This is a mandatory, all-in-one government system where you will file all your customs declarations and export documents online.",
+          "docs": [
+            "PSW Registration Portal"
+          ]
+        }
+      ]
+    },
+    {
+      "num": "02",
+      "title": "Find Buyers & Make Deals",
+      "color": "#3B82F6",
+      "bg": "#EFF6FF",
+      "steps": [
+        {
+          "title": "Find International Buyers",
+          "done": false,
+          "desc": "Look for buyers using online platforms (like Alibaba), attending international trade shows, or getting help from the Trade Development Authority of Pakistan (TDAP).",
+          "docs": [
+            "TDAP Portal"
+          ]
+        },
+        {
+          "title": "Send Product Samples",
+          "done": false,
+          "desc": "Send a small sample of your product to interested buyers via courier (like DHL or FedEx) so they can test the quality before making a large order.",
+          "docs": [
+            "Courier Waybill"
+          ]
+        },
+        {
+          "title": "Negotiate the Deal & Incoterms",
+          "done": false,
+          "desc": "Agree on the product price, quantity, and 'Incoterms' (who pays for shipping). For example, 'FOB' means you pay to load it on the ship, 'CIF' means you also pay for freight and insurance.",
+          "docs": [
+            "Incoterms Guide"
+          ]
+        },
+        {
+          "title": "Issue a Proforma Invoice (PI)",
+          "done": false,
+          "desc": "Send a Proforma Invoice to the buyer. This is a preliminary bill that confirms all the details of the order. The buyer needs this to arrange payment.",
+          "docs": [
+            "PI Template"
+          ]
+        },
+        {
+          "title": "Sign the Sales Contract",
+          "done": false,
+          "desc": "Sign a formal, legal contract with your buyer. It should clearly state what you are selling, the price, the delivery time, and the payment method.",
+          "docs": [
+            "Contract Draft",
+            "Signed Copy"
+          ]
+        }
+      ]
+    },
+    {
+      "num": "03",
+      "title": "Get Paid Safely (Financials)",
+      "color": "#8B5CF6",
+      "bg": "#F5F3FF",
+      "steps": [
+        {
+          "title": "Agree on Payment Method",
+          "done": false,
+          "desc": "Decide how you will be paid. The safest methods are 'Advance Payment' (getting paid before shipping) or 'Letter of Credit (LC)' (a bank guarantee).",
+          "docs": [
+            "Payment Terms Guide"
+          ]
+        },
+        {
+          "title": "Receive Advance or Letter of Credit",
+          "done": false,
+          "desc": "Wait until your bank confirms they have received the Advance Payment or the Letter of Credit from the buyer's bank. Do not ship without this!",
+          "docs": [
+            "LC Document"
+          ]
+        },
+        {
+          "title": "Submit Form-E via Bank",
+          "done": false,
+          "desc": "Apply for a 'Form-E' through your bank. This is an electronic form that tells the State Bank of Pakistan you are exporting goods and bringing foreign money into the country.",
+          "docs": [
+            "Form-E Application"
+          ]
+        },
+        {
+          "title": "Bank Approves Form-E",
+          "done": false,
+          "desc": "Once your bank verifies the payment or LC, they will approve your Form-E. You cannot export anything without an approved Form-E.",
+          "docs": [
+            "Form-E"
+          ]
+        }
+      ]
+    },
+    {
+      "num": "04",
+      "title": "Prepare & Ship Goods",
+      "color": "#F59E0B",
+      "bg": "#FFFBEB",
+      "steps": [
+        {
+          "title": "Manufacture & Pack the Goods",
+          "done": false,
+          "desc": "Produce or source the goods and pack them securely for international travel. Make sure to label the boxes correctly as required by the destination country.",
+          "docs": [
+            "Packing Guidelines"
+          ]
+        },
+        {
+          "title": "Book a Freight Forwarder",
+          "done": false,
+          "desc": "Hire a freight forwarder or clearing agent. They will book space for your goods on a ship or airplane and handle the complex logistics.",
+          "docs": [
+            "Booking Confirmation"
+          ]
+        },
+        {
+          "title": "Prepare the Packing List",
+          "done": false,
+          "desc": "Create a detailed Packing List. This document tells customs and the buyer exactly how many boxes there are, what is inside each box, and their weights.",
+          "docs": [
+            "Packing List"
+          ]
+        },
+        {
+          "title": "Issue the Commercial Invoice",
+          "done": false,
+          "desc": "Create the final Commercial Invoice. This is the official bill of sale that must match your Proforma Invoice exactly.",
+          "docs": [
+            "Commercial Invoice"
+          ]
+        },
+        {
+          "title": "Get Special Certificates",
+          "done": false,
+          "desc": "If you are exporting food or plants, get a Phytosanitary Certificate. You might also need a Certificate of Origin from your Chamber of Commerce.",
+          "docs": [
+            "CO Form",
+            "PS Certificate"
+          ]
+        }
+      ]
+    },
+    {
+      "num": "05",
+      "title": "Customs Clearance & Final Steps",
+      "color": "#EF4444",
+      "bg": "#FEF2F2",
+      "steps": [
+        {
+          "title": "File Goods Declaration (GD)",
+          "done": false,
+          "desc": "Your customs agent will submit a Goods Declaration (GD) online through the PSW portal. This tells Pakistan Customs exactly what is leaving the country.",
+          "docs": [
+            "GD Form"
+          ]
+        },
+        {
+          "title": "Customs Inspection & Loading",
+          "done": false,
+          "desc": "Your goods will arrive at the port. Customs and the Anti-Narcotics Force (ANF) may inspect them. Once cleared, the goods are loaded onto the ship or plane.",
+          "docs": [
+            "Clearance Order"
+          ]
+        },
+        {
+          "title": "Get the Bill of Lading (B/L)",
+          "done": false,
+          "desc": "Once the ship departs, the shipping company will give you a Bill of Lading (or Airway Bill for flights). This is the most important document—it proves the goods were shipped.",
+          "docs": [
+            "Original BL (3 sets)"
+          ]
+        },
+        {
+          "title": "Send Documents to the Buyer",
+          "done": false,
+          "desc": "Submit the Bill of Lading, Commercial Invoice, Packing List, and Form-E to your bank. Your bank will send them to the buyer's bank so the buyer can claim the goods.",
+          "docs": [
+            "Document Set"
+          ]
+        },
+        {
+          "title": "Receive Final Payment & Close Form-E",
+          "done": false,
+          "desc": "Once the buyer receives the documents and pays any remaining balance, the money comes to your bank. Your bank will then 'Close' the Form-E, and your export is officially complete!",
+          "docs": [
+            "Payment Received",
+            "Form-E Closure"
+          ]
+        }
+      ]
+    }
+  ],
+  "resourceLinks": {
+    "NTN Application": "https://iris.fbr.gov.pk/",
+    "STRN Application": "https://iris.fbr.gov.pk/",
+    "PSW Registration Portal": "https://www.psw.gov.pk/",
+    "TDAP Portal": "https://tdap.gov.pk/",
+    "Form-E Application": "https://www.sbp.org.pk/",
+    "Form-E": "https://www.sbp.org.pk/",
+    "Form-E Closure": "https://www.sbp.org.pk/",
+    "GD Form": "https://www.psw.gov.pk/",
+    "CO Form": "https://tdap.gov.pk/",
+    "PS Certificate": "https://plantprotection.gov.pk/",
+    "SECP Registration Guide": "https://www.secp.gov.pk/"
+  },
+  "announcements": [],
+  "documentTemplates": {
+    "exportContract": {
+      "clauses": [
+        {
+          "title": "SUBJECT MATTER",
+          "text": "The Seller agrees to sell, and the Buyer agrees to purchase, the following goods (the \"Goods\"): {description}, in the quantity, quality, and specification mutually agreed between the Parties."
+        },
+        {
+          "title": "CONTRACT VALUE",
+          "text": "The total contract value payable by the Buyer to the Seller for the Goods under this Contract is PKR {contractValue}, inclusive of all charges expressly agreed between the Parties, exclusive of any charges arising after risk transfer under Clause 3."
+        },
+        {
+          "title": "INCOTERMS",
+          "text": "Delivery of the Goods shall be governed by the Incoterms rule {incoterms} (as published by the International Chamber of Commerce, current revision), which shall determine the point of transfer of risk and cost between the Seller and the Buyer."
+        },
+        {
+          "title": "DELIVERY DATE",
+          "text": "The Seller shall ship or otherwise make available the Goods on or before {deliveryDate}, subject to extension for causes beyond the Seller's reasonable control, including force majeure events."
+        },
+        {
+          "title": "PAYMENT",
+          "text": "The Buyer shall remit payment of the contract value to the Seller in accordance with the payment terms and banking instructions communicated separately by the Seller, prior to or against shipping documents, as agreed between the Parties."
+        },
+        {
+          "title": "INSPECTION & ACCEPTANCE",
+          "text": "The Buyer shall have the right to inspect the Goods prior to shipment. Acceptance of the Goods shall be deemed final upon delivery in accordance with the agreed Incoterms, absent written notice of non-conformity within a reasonable period thereafter."
+        },
+        {
+          "title": "FORCE MAJEURE",
+          "text": "Neither Party shall be liable for delay or failure in performance resulting from causes beyond its reasonable control, including but not limited to natural disasters, war, strikes, or governmental restrictions."
+        },
+        {
+          "title": "GOVERNING LAW & JURISDICTION",
+          "text": "This Contract shall be governed by and construed in accordance with the laws of {governingLaw}, and any disputes arising hereunder shall be subject to the exclusive jurisdiction of the competent courts thereof."
+        },
+        {
+          "title": "ENTIRE AGREEMENT",
+          "text": "This Contract constitutes the entire agreement between the Parties with respect to its subject matter and supersedes all prior negotiations, representations, or agreements, whether written or oral."
+        }
+      ]
+    },
+    "proformaInvoice": {
+      "declaration": "We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct. hiihi"
+    },
+    "packingList": {
+      "footerNotes": "Thank you for your business."
+    }
+  }
+}

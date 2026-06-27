@@ -26,6 +26,7 @@ test_*
 !package-lock.json
 !.oxlintrc.json
 !vercel.json
+!backend/settings.json
 
 # Editor directories and files
 .vscode/*
