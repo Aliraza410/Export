@@ -20,6 +20,14 @@ const PageLoader = () => (
   </div>
 );
 
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
 export default function App() {
   const navigate = useNavigate();
 
@@ -49,13 +57,13 @@ export default function App() {
           <Route path="/login" element={<AuthPage mode="login" onNavigate={handleNavigate} />} />
           <Route path="/signup" element={<AuthPage mode="signup" onNavigate={handleNavigate} />} />
           <Route path="/forgot" element={<AuthPage mode="forgot" onNavigate={handleNavigate} />} />
-          <Route path="/dashboard" element={<Dashboard onNavigate={handleNavigate} />} />
-          <Route path="/guidance" element={<ExportGuidance onNavigate={handleNavigate} />} />
-          <Route path="/estimator" element={<CostEstimator onNavigate={handleNavigate} />} />
-          <Route path="/documents" element={<Documents onNavigate={handleNavigate} />} />
-          <Route path="/insights" element={<CountryInsights onNavigate={handleNavigate} />} />
-          <Route path="/admin" element={<AdminPanel onNavigate={handleNavigate} />} />
-          <Route path="/settings" element={<Settings onNavigate={handleNavigate} />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard onNavigate={handleNavigate} /></ProtectedRoute>} />
+          <Route path="/guidance" element={<ProtectedRoute><ExportGuidance onNavigate={handleNavigate} /></ProtectedRoute>} />
+          <Route path="/estimator" element={<ProtectedRoute><CostEstimator onNavigate={handleNavigate} /></ProtectedRoute>} />
+          <Route path="/documents" element={<ProtectedRoute><Documents onNavigate={handleNavigate} /></ProtectedRoute>} />
+          <Route path="/insights" element={<ProtectedRoute><CountryInsights onNavigate={handleNavigate} /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><AdminPanel onNavigate={handleNavigate} /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings onNavigate={handleNavigate} /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
