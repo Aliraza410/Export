@@ -8,10 +8,10 @@ const AnimatedNavLink = ({ href, children, isScrolled }) => {
   const textSizeClass = 'text-sm font-medium';
 
   return (
-    <a href={href} className={`group relative inline-flex overflow-hidden h-5 items-center whitespace-nowrap ${textSizeClass}`}>
+    <a href={href} className={`group relative inline-block overflow-hidden h-5 whitespace-nowrap align-middle ${textSizeClass}`}>
       <div className="flex flex-col transition-transform duration-400 ease-out transform group-hover:-translate-y-1/2">
-        <span className={`transition-colors duration-300 ${defaultTextColor}`}>{children}</span>
-        <span className={`transition-colors duration-300 ${hoverTextColor}`}>{children}</span>
+        <span className={`transition-colors duration-300 h-5 flex items-center ${defaultTextColor}`}>{children}</span>
+        <span className={`transition-colors duration-300 h-5 flex items-center ${hoverTextColor}`}>{children}</span>
       </div>
     </a>
   );
