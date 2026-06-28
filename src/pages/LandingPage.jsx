@@ -8,7 +8,6 @@ import NotifItem from "../components/NotifItem.jsx";
 import StaggerTestimonials from "../components/StaggerTestimonials.jsx";
 import HeroSection from "../components/HeroSection.jsx";
 import { Feature } from "../components/ui/feature-with-advantages.jsx";
-import { Pricing } from "../components/ui/pricing.jsx";
 import { Navbar } from "../components/ui/mini-navbar.jsx";
 import { MinimalFooter } from "../components/ui/minimal-footer.jsx";
 import { ContactCard } from "../components/ui/contact-card.jsx";
@@ -42,57 +41,6 @@ const LandingPage = ({ onNavigate }) => {
     { name: "Tariq Mahmood", role: "Rice Exporter, Lahore", text: "ExportEase guided me through my very first export to UAE. What seemed impossible became simple with their step-by-step system.", avatar: "TM", stars: 5 },
     { name: "Sadia Farooq", role: "Textile Startup, Faisalabad", text: "The document generator saved us 3 weeks of back-and-forth. All our export documents were ready in hours.", avatar: "SF", stars: 5 },
     { name: "Hassan Raza", role: "Spice Trader, Karachi", text: "Country insights showed me Germany is the best market for our products. Doubled our revenue in 6 months.", avatar: "HR", stars: 5 },
-  ];
-
-  const pricingPlans = [
-    {
-      name: "Starter",
-      price: "0",
-      yearlyPrice: "0",
-      features: [
-        "Basic export guidance",
-        "Manual document templates",
-        "Market insights (Top 5 countries)",
-        "Community support",
-      ],
-      description: "Perfect for individuals exploring the export business.",
-      buttonText: "Get Started Free",
-      href: "/signup",
-      isPopular: false,
-    },
-    {
-      name: "Pro Exporter",
-      price: "5000",
-      yearlyPrice: "4000",
-      features: [
-        "Step-by-step company setup",
-        "Automated document generation",
-        "Full country & market insights",
-        "Cost estimator & ROI calculator",
-        "Priority email support",
-      ],
-      description: "Everything you need to manage active exports efficiently.",
-      buttonText: "Start 14-Day Free Trial",
-      href: "/signup",
-      isPopular: true,
-    },
-    {
-      name: "Enterprise",
-      price: "0",
-      yearlyPrice: "0",
-      isCustom: true,
-      features: [
-        "Unlimited export clients",
-        "Custom document branding",
-        "Direct logistics integration",
-        "Dedicated account manager",
-        "API Access",
-      ],
-      description: "For large agencies managing multiple export clients.",
-      buttonText: "Contact Sales",
-      href: "/signup",
-      isPopular: false,
-    },
   ];
 
   return (
@@ -137,9 +85,6 @@ const LandingPage = ({ onNavigate }) => {
           <StaggerTestimonials />
         </div>
       </section>
-
-      {/* Pricing */}
-      <Pricing plans={pricingPlans} />
 
       {/* Contact Us */}
       <section style={{ padding: "80px 5%", background: "#F1F5F9", borderTop: "1px solid #E2E8F0" }}>

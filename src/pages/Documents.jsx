@@ -22,7 +22,7 @@ const Documents = ({ onNavigate }) => {
     buyerName: "", buyerAddress: "", portOfLoading: "", portOfDischarge: "",
     hsCode: "", description: "", quantity: 1, unitPrice: 0, paymentTerms: "",
     packageType: "Cartons", totalPackages: 1, dimensions: "", netWeight: 0, grossWeight: 0, shippingMark: "",
-    contractValue: 0, incoterms: "FOB", deliveryDate: "", governingLaw: "Laws of Pakistan"
+    contractValue: 0, incoterms: "FOB", deliveryDate: "", governingLaw: "Laws of Pakistan", customFields: {}
   });
 
   const [modalPos, setModalPos] = useState({ x: 0, y: 0 });
@@ -113,6 +113,7 @@ const Documents = ({ onNavigate }) => {
   const [selectedReg, setSelectedReg] = useState(null);
   const [toastMsg, setToastMsg] = useState("");
   const [docToDelete, setDocToDelete] = useState(null);
+  const [settings, setSettings] = useState({});
 
   const showToast = (msg) => {
     setToastMsg(msg);
@@ -121,6 +122,10 @@ const Documents = ({ onNavigate }) => {
 
   useEffect(() => {
     const fetchDocs = async () => {
+      try {
+        const settingsRes = await api.get('/settings');
+        setSettings(settingsRes.data);
+      } catch (err) {}
       if (activeTab === "my-docs") {
         try {
           const res = await api.get('/documents');
@@ -171,7 +176,7 @@ const Documents = ({ onNavigate }) => {
       buyerName: "", buyerAddress: "", portOfLoading: "", portOfDischarge: "",
       hsCode: "", description: "", quantity: 1, unitPrice: 0, paymentTerms: "",
       totalPackages: 1, netWeight: 0, grossWeight: 0,
-      contractValue: 0, incoterms: "FOB", deliveryDate: "", governingLaw: "Laws of Pakistan"
+      contractValue: 0, incoterms: "FOB", deliveryDate: "", governingLaw: "Laws of Pakistan", customFields: {}
     });
     setModalPos({ x: 0, y: 0 });
     setShowGenModal(true);
@@ -496,6 +501,28 @@ const Documents = ({ onNavigate }) => {
                       <div><label style={{ display: "block", marginBottom: 6, fontSize: 12, fontWeight: 600, color: "#334155" }}>Governing Law</label><input required type="text" value={genFormData.governingLaw} onChange={e => setGenFormData({ ...genFormData, governingLaw: e.target.value })} style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #CBD5E1", boxSizing: "border-box", fontSize: 13, outline: "none" }} /></div>
                     </>
                   )}
+
+                  {/* Dynamic Custom Fields */}
+                  {settings.documentCustomFields && settings.documentCustomFields[genDocType] && settings.documentCustomFields[genDocType].map((field, idx) => (
+                    <div key={idx} style={{ gridColumn: field.type === 'textarea' ? "1 / -1" : "auto" }}>
+                      <label style={{ display: "block", marginBottom: 6, fontSize: 12, fontWeight: 600, color: "#334155" }}>{field.label}</label>
+                      {field.type === 'textarea' ? (
+                        <textarea 
+                          rows="2" 
+                          value={genFormData.customFields[field.name] || ''} 
+                          onChange={e => setGenFormData({ ...genFormData, customFields: { ...genFormData.customFields, [field.name]: e.target.value } })} 
+                          style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #CBD5E1", boxSizing: "border-box", fontFamily: "inherit", fontSize: 13, outline: "none", resize: "vertical" }}
+                        ></textarea>
+                      ) : (
+                        <input 
+                          type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'} 
+                          value={genFormData.customFields[field.name] || ''} 
+                          onChange={e => setGenFormData({ ...genFormData, customFields: { ...genFormData.customFields, [field.name]: e.target.value } })} 
+                          style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #CBD5E1", boxSizing: "border-box", fontSize: 13, outline: "none" }} 
+                        />
+                      )}
+                    </div>
+                  ))}
                 </div>
 
                 {(genDocType === "Commercial Invoice" || genDocType === "Proforma Invoice") && (

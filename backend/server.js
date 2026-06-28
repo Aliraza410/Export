@@ -490,7 +490,7 @@ app.get('/api/documents/template/:name', (req, res) => {
 app.post('/api/documents/generate', authMiddleware, async (req, res) => {
   try {
     const settings = getEstimatorSettings();
-    const { type, buyerName, buyerAddress, portOfLoading, portOfDischarge, hsCode, description, quantity, unitPrice, paymentTerms, totalPackages, netWeight, grossWeight, contractValue, incoterms, deliveryDate, governingLaw, packageType, dimensions, shippingMark } = req.body;
+    const { type, buyerName, buyerAddress, portOfLoading, portOfDischarge, hsCode, description, quantity, unitPrice, paymentTerms, totalPackages, netWeight, grossWeight, contractValue, incoterms, deliveryDate, governingLaw, packageType, dimensions, shippingMark, customFields } = req.body;
 
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const filename = `${(type || 'Document').replace(/\s+/g, '_')}_${uniqueSuffix}.pdf`;
@@ -500,10 +500,97 @@ app.post('/api/documents/generate', authMiddleware, async (req, res) => {
     const writeStream = fs.createWriteStream(filePath);
     doc.pipe(writeStream);
 
-    const primaryColor = '#1E6FD9';
+    const docType = (type || 'Document').toUpperCase();
+    const theme = settings.documentThemes?.[type] || { layoutPattern: 'modern', primaryColor: '#1A2942' };
+    const primaryColor = theme.primaryColor || '#1E6FD9';
     const textColor = '#333333';
     const lightGray = '#E5E7EB';
-    const docType = (type || 'Document').toUpperCase();
+
+    const renderCustomFields = (doc, currentY) => {
+      const docCustomFieldsConfig = settings.documentCustomFields?.[type] || [];
+      const activeFields = docCustomFieldsConfig.filter(f => customFields && customFields[f.name] !== undefined && customFields[f.name] !== "");
+      
+      if (activeFields.length === 0) return currentY;
+      
+      let yPos = currentY + 10;
+      if (yPos > 650) { doc.addPage(); yPos = 50; }
+      
+      const darkBlue = '#1A2942';
+      const textDark = '#0A1628';
+      const textGray = '#475569';
+      const border = '#CBD5E1';
+      
+      if (type === 'Packing List' || type === 'Proforma Invoice' || type === 'Export Contract') {
+        doc.fontSize(11).font('Helvetica-Bold').fillColor(darkBlue).text('ADDITIONAL DETAILS', 40, yPos);
+        doc.moveTo(40, yPos + 15).lineTo(572, yPos + 15).strokeColor(darkBlue).lineWidth(1.5).stroke();
+        yPos += 22;
+      } else {
+        doc.fontSize(10).font('Helvetica-Bold').fillColor(darkBlue).text('ADDITIONAL DETAILS', 40, yPos);
+        yPos += 15;
+      }
+      
+      let col = 0;
+      activeFields.forEach((fieldConfig) => {
+        const isTextarea = fieldConfig.type === 'textarea';
+        const val = String(customFields[fieldConfig.name]);
+        const neededHeight = isTextarea ? doc.heightOfString(val, { width: 510 }) + 30 : 40;
+        
+        if (yPos + neededHeight > 750) {
+          doc.addPage();
+          yPos = 50;
+        }
+
+        if (isTextarea) {
+          if (col === 1) { yPos += 40; col = 0; }
+          doc.rect(40, yPos, 532, neededHeight).strokeColor(border).lineWidth(1).stroke();
+          doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text(fieldConfig.label.toUpperCase(), 45, yPos + 6);
+          doc.fontSize(10).font('Helvetica').fillColor(textDark).text(val, 45, yPos + 20, { width: 510 });
+          yPos += neededHeight;
+        } else {
+          if (col === 0) {
+            doc.rect(40, yPos, 532, 40).strokeColor(border).lineWidth(1).stroke();
+            doc.moveTo(306, yPos).lineTo(306, yPos + 40).strokeColor(border).stroke();
+            doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text(fieldConfig.label.toUpperCase(), 45, yPos + 6);
+            doc.fontSize(10).font('Helvetica').fillColor(textDark).text(val, 45, yPos + 20, { width: 250, height: 16, ellipsis: true });
+            col = 1;
+          } else {
+            doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text(fieldConfig.label.toUpperCase(), 311, yPos + 6);
+            doc.fontSize(10).font('Helvetica').fillColor(textDark).text(val, 311, yPos + 20, { width: 250, height: 16, ellipsis: true });
+            col = 0;
+            yPos += 40;
+          }
+        }
+      });
+      
+      if (col === 1) {
+        yPos += 40;
+      }
+      
+      return yPos + 10;
+    };
+
+    const replaceVars = (str) => {
+      if (!str) return '';
+      return str
+        .replace(/{description}/g, description || 'Export Goods')
+        .replace(/{contractValue}/g, Number(contractValue || '0.00').toLocaleString('en-US'))
+        .replace(/{incoterms}/g, incoterms || 'FOB')
+        .replace(/{deliveryDate}/g, deliveryDate || 'TBD')
+        .replace(/{governingLaw}/g, governingLaw || 'Pakistan')
+        .replace(/{buyerName}/g, buyerName || 'Buyer Name');
+    };
+
+    const drawGenericClause = (num, title, text, yPos, color1, color2) => {
+      if (yPos > 700) {
+        doc.addPage();
+        yPos = 50;
+      }
+      if (title) {
+        doc.fontSize(10).font('Helvetica-Bold').fillColor(color1).text(`${num}.   ${title}. `, 40, yPos, { continued: true });
+      }
+      doc.font('Helvetica').fillColor(color2).text(text, { width: 532, align: 'justify' });
+      return doc.y;
+    };
 
     // --- COMMON HEADER ---
     if (type !== 'Proforma Invoice' && type !== 'Commercial Invoice' && type !== 'Export Contract' && type !== 'Packing List') {
@@ -519,7 +606,7 @@ app.post('/api/documents/generate', authMiddleware, async (req, res) => {
     const yAddresses = doc.y;
 
     if (type === 'Export Contract') {
-      const darkBlue = '#1A2942';
+      const darkBlue = theme.primaryColor || '#1A2942';
       const textDark = '#0A1628';
       const textGray = '#475569';
       const border = '#CBD5E1';
@@ -563,32 +650,14 @@ app.post('/api/documents/generate', authMiddleware, async (req, res) => {
 
       // Clauses
       y += 20;
-      const drawClause = (num, title, text, yPos) => {
-        if (yPos > 700) {
-          doc.addPage();
-          yPos = 50;
-        }
-        doc.fontSize(10).font('Helvetica-Bold').fillColor(darkBlue).text(`${num}.   ${title}. `, 40, yPos, { continued: true });
-        doc.font('Helvetica').fillColor(textDark).text(text);
-        return doc.y;
-      };
-
       const defaultClauses = settings.documentTemplates?.exportContract?.clauses || [];
       let nextY = y + 10;
-      
-      const replaceVars = (str) => {
-        return str
-          .replace(/{description}/g, description || 'Export Goods')
-          .replace(/{contractValue}/g, Number(contractValue || '0.00').toLocaleString('en-US'))
-          .replace(/{incoterms}/g, incoterms || 'FOB')
-          .replace(/{deliveryDate}/g, deliveryDate || 'TBD')
-          .replace(/{governingLaw}/g, governingLaw || 'Pakistan')
-          .replace(/{buyerName}/g, buyerName || 'Buyer Name');
-      };
 
       defaultClauses.forEach((clause, index) => {
-        nextY = drawClause(index + 1, clause.title, replaceVars(clause.text), nextY + 10);
+        nextY = drawGenericClause(index + 1, clause.title, replaceVars(clause.text), nextY + 10, darkBlue, textDark);
       });
+
+      nextY = renderCustomFields(doc, nextY);
 
       // Signatures
       y = nextY + 30;
@@ -611,7 +680,7 @@ app.post('/api/documents/generate', authMiddleware, async (req, res) => {
       doc.text('ExportEase Pvt. Ltd.   |   www.exportease.com   |   trade@exportease.com', 40, 730, { align: 'center' });
 
     } else if (type === 'Packing List') {
-      const darkBlue = '#1A2942';
+      const darkBlue = theme.primaryColor || '#1A2942';
       const textDark = '#0A1628';
       const textGray = '#475569';
       const border = '#CBD5E1';
@@ -724,9 +793,19 @@ app.post('/api/documents/generate', authMiddleware, async (req, res) => {
       doc.fontSize(10).font('Helvetica').fillColor(textDark).text(shippingMark || 'N/A', 45, y + 18);
 
       // Certification Footer
-      y += 60;
-      const plDec = settings.documentTemplates?.packingList?.footerNotes || 'We hereby certify that the above particulars are true and correct, and that the goods have been packed as described.';
-      doc.fontSize(9).font('Helvetica-Oblique').fillColor(textDark).text(plDec, 40, y);
+      y = renderCustomFields(doc, y + 45);
+      y += 20;
+      const plClauses = settings.documentTemplates?.packingList?.clauses || [];
+      if (plClauses.length > 0) {
+        let nextY = y;
+        plClauses.forEach((clause, index) => {
+          nextY = drawGenericClause(index + 1, clause.title, replaceVars(clause.text), nextY + 10, primaryColor, textDark);
+        });
+        y = nextY;
+      } else {
+        const plDec = settings.documentTemplates?.packingList?.footerNotes || 'We hereby certify that the above particulars are true and correct, and that the goods have been packed as described.';
+        doc.fontSize(9).font('Helvetica-Oblique').fillColor(textDark).text(plDec, 40, y);
+      }
 
       y += 30;
       doc.moveTo(40, y).lineTo(572, y).strokeColor(border).lineWidth(1).stroke();
@@ -740,7 +819,7 @@ app.post('/api/documents/generate', authMiddleware, async (req, res) => {
       doc.text('ExportEase Pvt. Ltd.   |   www.exportease.com   |   trade@exportease.com', 40, 750, { align: 'center' });
 
     } else if (type === 'Proforma Invoice') {
-      const darkBlue = '#1A2942';
+      const darkBlue = theme.primaryColor || '#1A2942';
       const textDark = '#0A1628';
       const textGray = '#475569';
       const border = '#E2E8F0';
@@ -885,6 +964,8 @@ app.post('/api/documents/generate', authMiddleware, async (req, res) => {
       drawCell('BRANCH ADDRESS', 'Main Branch, Karachi', 40 + bw, y + 25);
       drawCell('CURRENCY', 'PKR', 40 + bw * 2, y + 25);
 
+      y = renderCustomFields(doc, y + 55);
+
       // Footer for first page
       doc.moveTo(40, 720).lineTo(572, 720).stroke(border);
       doc.fontSize(8).font('Helvetica').fillColor(textGray);
@@ -906,8 +987,17 @@ app.post('/api/documents/generate', authMiddleware, async (req, res) => {
       ], 50, 70, { lineGap: 6, bulletRadius: 2 });
 
       doc.moveDown(2);
-      const piDec = settings.documentTemplates?.proformaInvoice?.declaration || 'We hereby certify that this Proforma Invoice is true and correct, and that the goods described above will be exported in accordance with the terms stated herein.';
-      doc.font('Helvetica-Oblique').fillColor(textGray).text(piDec, 40, doc.y, { width: 532, lineGap: 2 });
+      const piClauses = settings.documentTemplates?.proformaInvoice?.clauses || [];
+      if (piClauses.length > 0) {
+        let nextY = doc.y;
+        piClauses.forEach((clause, index) => {
+          nextY = drawGenericClause(index + 1, clause.title, replaceVars(clause.text), nextY + 10, primaryColor, textGray);
+        });
+        doc.y = nextY;
+      } else {
+        const piDec = settings.documentTemplates?.proformaInvoice?.declaration || 'We hereby certify that this Proforma Invoice is true and correct, and that the goods described above will be exported in accordance with the terms stated herein.';
+        doc.font('Helvetica-Oblique').fillColor(textGray).text(piDec, 40, doc.y, { width: 532, lineGap: 2 });
+      }
 
       doc.moveDown(2);
       const sigY = doc.y;
@@ -928,134 +1018,270 @@ app.post('/api/documents/generate', authMiddleware, async (req, res) => {
       doc.text(`Generated ${new Date().toLocaleDateString()}`, 450, 730, { width: 122, align: 'right', lineBreak: false });
     } else {
       // Commercial Invoice Default (using requested template)
-      const darkBlue = '#1A2942';
+      const darkBlue = theme.primaryColor || '#1A2942';
       const textDark = '#0A1628';
       const textGray = '#475569';
       const border = '#CBD5E1';
+      const layoutPattern = theme.layoutPattern || 'modern';
 
       const amount = (parseFloat(quantity || 1) * parseFloat(unitPrice || 0)).toFixed(2);
 
       doc.options.bufferPages = true;
 
-      // Top Header
-      doc.fillColor(darkBlue).fontSize(22).font('Helvetica-Bold').text('EXPORTEASE', 40, 50);
-      doc.fontSize(9).font('Helvetica-Bold').fillColor(textGray).text('GLOBAL TRADE & EXPORT SOLUTIONS', 40, 75);
-      doc.fontSize(9).font('Helvetica').fillColor(textGray).text('Plot 14, Sector A, Industrial Trade Zone, Lahore, Punjab, Pakistan\nPhone: +92 300 1234567   |   Email: trade@exportease.com   |   www.exportease.com', 40, 88, { lineGap: 2 });
+      if (layoutPattern === 'classic') {
+        doc.fontSize(22).font('Helvetica-Bold').fillColor(darkBlue).text('COMMERCIAL INVOICE', 0, 50, { align: 'center' });
+        doc.moveTo(200, 75).lineTo(412, 75).strokeColor(darkBlue).lineWidth(2).stroke();
+        doc.lineWidth(1);
+        doc.fontSize(12).font('Helvetica-Bold').fillColor(textDark).text('EXPORTEASE', 0, 85, { align: 'center' });
+        doc.fontSize(9).font('Helvetica').fillColor(textGray).text('Plot 14, Sector A, Industrial Trade Zone, Lahore, Pakistan', 0, 100, { align: 'center' });
 
-      doc.fontSize(16).font('Helvetica-Bold').fillColor(darkBlue).text('COMMERCIAL INVOICE', 350, 50, { width: 220, align: 'right' });
-      doc.fontSize(9).font('Helvetica-Oblique').fillColor(textGray).text('Tax / Payment Document', 350, 70, { width: 220, align: 'right' });
+        let y = 140;
+        doc.fontSize(10).font('Helvetica-Bold').fillColor(darkBlue).text('Invoice No: ', 40, y, { continued: true }).fillColor(textDark).text(`CI-2026-${uniqueSuffix.toString().slice(-4)}`);
+        doc.fontSize(10).font('Helvetica-Bold').fillColor(darkBlue).text('Date: ', 400, y, { continued: true }).fillColor(textDark).text(new Date().toLocaleDateString());
 
-      // Meta Info Bar
-      let y = 130;
-      doc.rect(40, y, 532, 35).fill('#F1F5F9');
-      doc.moveTo(306, y).lineTo(306, y + 35).strokeColor('white').lineWidth(2).stroke();
-      doc.lineWidth(1);
+        y += 30;
+        doc.moveTo(40, y).lineTo(572, y).strokeColor(border).stroke();
+        y += 15;
+        
+        doc.fontSize(11).font('Helvetica-Bold').fillColor(darkBlue).text('BUYER DETAILS', 40, y);
+        doc.fontSize(11).font('Helvetica-Bold').fillColor(darkBlue).text('PORT DETAILS', 300, y);
+        y += 20;
+        doc.fontSize(10).font('Helvetica').fillColor(textDark).text(`Name: ${buyerName || 'N/A'}`, 40, y);
+        doc.text(`Loading: ${portOfLoading || 'N/A'}`, 300, y);
+        y += 15;
+        doc.text(`Address: ${(buyerAddress || 'N/A').replace(/\n/g, ', ')}`, 40, y, { width: 200 });
+        doc.text(`Discharge: ${portOfDischarge || 'N/A'}`, 300, y);
 
-      doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text('INVOICE NO.', 45, y + 6);
-      doc.fontSize(10).font('Helvetica-Bold').fillColor(textDark).text(`CI-2026-${uniqueSuffix.toString().slice(-4)}`, 45, y + 18);
+        y += 50;
+        doc.moveTo(40, y).lineTo(572, y).strokeColor(border).stroke();
+        y += 15;
 
-      doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text('DATE OF ISSUE', 311, y + 6);
-      doc.fontSize(10).font('Helvetica-Bold').fillColor(textDark).text(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), 311, y + 18);
+        doc.fontSize(11).font('Helvetica-Bold').fillColor(darkBlue).text('GOODS & CHARGES', 40, y);
+        y += 20;
+        doc.fontSize(9).font('Helvetica-Bold').fillColor(textGray);
+        doc.text('Description', 40, y, { width: 220 });
+        doc.text('HS Code', 260, y);
+        doc.text('Qty', 330, y);
+        doc.text('Price', 400, y);
+        doc.text('Amount', 490, y, { width: 80, align: 'right' });
+        y += 15;
+        doc.moveTo(40, y).lineTo(572, y).strokeColor(border).stroke();
+        y += 10;
+        
+        doc.fontSize(10).font('Helvetica').fillColor(textDark);
+        doc.text(description || 'N/A', 40, y, { width: 220 });
+        doc.text(hsCode || 'N/A', 260, y);
+        doc.text(quantity || '1', 330, y);
+        doc.text(Number(parseFloat(unitPrice || 0).toFixed(2)).toLocaleString('en-US'), 400, y);
+        doc.text(Number(amount).toLocaleString('en-US'), 490, y, { width: 80, align: 'right' });
+        y += 30;
+        doc.moveTo(330, y).lineTo(572, y).strokeColor(border).stroke();
+        y += 10;
+        doc.font('Helvetica-Bold').text('Total Amount (PKR):', 330, y);
+        doc.text(Number(amount).toLocaleString('en-US'), 490, y, { width: 80, align: 'right' });
 
-      // Helper function for sections
-      const drawSectionTitle = (title, yPos) => {
-        doc.fontSize(10).font('Helvetica-Bold').fillColor(darkBlue).text(title, 40, yPos);
-      };
+        y += 50;
+        doc.fontSize(11).font('Helvetica-Bold').fillColor(darkBlue).text('PAYMENT TERMS', 40, y);
+        y += 15;
+        doc.fontSize(10).font('Helvetica').fillColor(textDark).text(paymentTerms || 'N/A', 40, y);
 
-      // BUYER / CLIENT DETAILS
-      y += 60;
-      drawSectionTitle('BUYER / CLIENT DETAILS', y);
-      y += 15;
-      doc.rect(40, y, 532, 45).strokeColor(border).stroke();
-      doc.moveTo(306, y).lineTo(306, y + 45).strokeColor(border).stroke();
+        y = renderCustomFields(doc, y + 30);
+        
+        y += 30;
+        const ciClauses = settings.documentTemplates?.commercialInvoice?.clauses || [];
+        if (ciClauses.length > 0) {
+          let nextY = y;
+          ciClauses.forEach((clause, index) => {
+            nextY = drawGenericClause(index + 1, clause.title, replaceVars(clause.text), nextY + 10, primaryColor, textGray);
+          });
+          y = nextY;
+        } else {
+          const ciDec = settings.documentTemplates?.proformaInvoice?.declaration || 'We hereby certify that this Commercial Invoice is true and correct.';
+          doc.fontSize(9).font('Helvetica-Oblique').fillColor(textGray).text(ciDec, 40, y, { width: 532, align: 'center' });
+        }
 
-      doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text('BUYER / CLIENT NAME', 45, y + 6);
-      doc.fontSize(10).font('Helvetica').fillColor(textDark).text(buyerName || 'N/A', 45, y + 20);
+        y += 50;
+        doc.fontSize(10).font('Helvetica-Bold').fillColor(textDark).text('Authorized Signature', 400, y, { align: 'center', width: 150 });
+        doc.moveTo(400, y - 5).lineTo(550, y - 5).strokeColor(textDark).stroke();
 
-      doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text('CLIENT ADDRESS', 311, y + 6);
-      doc.fontSize(10).font('Helvetica').fillColor(textDark).text((buyerAddress || 'N/A').replace(/\n/g, ', '), 311, y + 20, { width: 250, height: 20, ellipsis: true });
+        doc.fontSize(8).font('Helvetica').fillColor(textGray).text('ExportEase Pvt. Ltd.', 0, 730, { align: 'center' });
+      } else if (layoutPattern === 'minimal') {
+        let y = 50;
+        doc.fontSize(28).font('Helvetica-Bold').fillColor(textDark).text('INVOICE', 40, y);
+        doc.fontSize(10).font('Helvetica').fillColor(textGray).text(`CI-2026-${uniqueSuffix.toString().slice(-4)} | ${new Date().toLocaleDateString()}`, 40, y + 35);
+        
+        doc.fontSize(14).font('Helvetica-Bold').fillColor(darkBlue).text('EXPORTEASE', 400, y, { align: 'right', width: 172 });
+        doc.fontSize(9).font('Helvetica').fillColor(textGray).text('trade@exportease.com', 400, y + 20, { align: 'right', width: 172 });
 
-      // PORT DETAILS
-      y += 65;
-      drawSectionTitle('PORT DETAILS', y);
-      y += 15;
-      doc.rect(40, y, 532, 40).strokeColor(border).stroke();
-      doc.moveTo(306, y).lineTo(306, y + 40).strokeColor(border).stroke();
+        y += 80;
+        doc.fontSize(9).font('Helvetica-Bold').fillColor(textGray).text('BILLED TO', 40, y);
+        doc.fontSize(11).font('Helvetica').fillColor(textDark).text(buyerName || 'N/A', 40, y + 15);
+        doc.fontSize(9).fillColor(textGray).text((buyerAddress || 'N/A').replace(/\n/g, ', '), 40, y + 30, { width: 200 });
 
-      doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text('PORT OF LOADING', 45, y + 6);
-      doc.fontSize(10).font('Helvetica').fillColor(textDark).text(portOfLoading || 'N/A', 45, y + 20);
+        doc.fontSize(9).font('Helvetica-Bold').fillColor(textGray).text('SHIPPING', 300, y);
+        doc.fontSize(10).font('Helvetica').fillColor(textDark).text(`From: ${portOfLoading || 'N/A'}`, 300, y + 15);
+        doc.text(`To: ${portOfDischarge || 'N/A'}`, 300, y + 30);
 
-      doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text('PORT OF DISCHARGE', 311, y + 6);
-      doc.fontSize(10).font('Helvetica').fillColor(textDark).text(portOfDischarge || 'N/A', 311, y + 20);
+        y += 80;
+        doc.moveTo(40, y).lineTo(572, y).strokeColor(lightGray).lineWidth(1).stroke();
+        y += 20;
 
-      // GOODS DETAILS
-      y += 60;
-      drawSectionTitle('GOODS DETAILS', y);
-      y += 15;
-      doc.rect(40, y, 532, 20).fillColor(darkBlue).fill();
+        doc.fontSize(9).font('Helvetica-Bold').fillColor(textGray);
+        doc.text('DESCRIPTION', 40, y);
+        doc.text('AMOUNT', 490, y, { width: 80, align: 'right' });
+        
+        y += 20;
+        doc.fontSize(11).font('Helvetica').fillColor(textDark).text(description || 'N/A', 40, y);
+        doc.text(Number(amount).toLocaleString('en-US'), 490, y, { width: 80, align: 'right' });
 
-      doc.fillColor('white').fontSize(9).font('Helvetica-Bold');
-      doc.text('Product Description', 45, y + 6, { width: 205, align: 'center' });
-      doc.text('HS Code', 250, y + 6, { width: 80, align: 'center' });
-      doc.text('Quantity', 330, y + 6, { width: 70, align: 'center' });
-      doc.text('Unit Price (PKR)', 400, y + 6, { width: 85, align: 'center' });
-      doc.text('Amount (PKR)', 485, y + 6, { width: 85, align: 'center' });
+        y += 20;
+        doc.fontSize(9).fillColor(textGray).text(`Qty: ${quantity || '1'} x Rs. ${unitPrice || '0'} (HS: ${hsCode || 'N/A'})`, 40, y);
 
-      // Draw grid lines for table
-      const tH = 25; // row height
-      doc.rect(40, y + 20, 532, tH).strokeColor(border).stroke();
-      doc.rect(40, y + 20 + tH, 532, tH).strokeColor(border).stroke();
+        y += 40;
+        doc.moveTo(350, y).lineTo(572, y).strokeColor(lightGray).stroke();
+        y += 15;
+        doc.fontSize(12).font('Helvetica-Bold').fillColor(darkBlue).text('TOTAL DUE', 350, y);
+        doc.text(`PKR ${Number(amount).toLocaleString('en-US')}`, 450, y, { width: 122, align: 'right' });
 
-      doc.lineWidth(1);
-      const xs = [250, 330, 400, 485];
-      // Header dividers
-      xs.forEach(xPos => {
-        doc.moveTo(xPos, y).lineTo(xPos, y + 20).strokeColor('white').stroke();
-        doc.moveTo(xPos, y + 20).lineTo(xPos, y + 20 + tH).strokeColor(border).stroke();
-      });
+        y += 60;
+        doc.fontSize(9).font('Helvetica-Bold').fillColor(textGray).text('PAYMENT TERMS', 40, y);
+        doc.fontSize(10).font('Helvetica').fillColor(textDark).text(paymentTerms || 'N/A', 40, y + 15);
 
-      // Total row verticals: 400, 485
-      doc.moveTo(400, y + 20 + tH).lineTo(400, y + 20 + tH * 2).strokeColor(border).stroke();
-      doc.moveTo(485, y + 20 + tH).lineTo(485, y + 20 + tH * 2).strokeColor(border).stroke();
+        y = renderCustomFields(doc, y + 40);
 
-      // Data
-      doc.fillColor(textDark).fontSize(10).font('Helvetica');
-      doc.text(description || 'N/A', 45, y + 26, { width: 200, align: 'left' });
-      doc.text(hsCode || 'N/A', 250, y + 26, { width: 80, align: 'center' });
-      doc.text(quantity || '1', 330, y + 26, { width: 70, align: 'center' });
-      doc.text(Number(parseFloat(unitPrice || 0).toFixed(2)).toLocaleString('en-US'), 400, y + 26, { width: 85, align: 'center' });
-      doc.text(Number(amount).toLocaleString('en-US'), 485, y + 26, { width: 80, align: 'right' });
+        y += 50;
+        doc.fontSize(9).font('Helvetica-Oblique').fillColor(textGray).text('Thank you for your business.', 40, y);
+      } else {
+        // Modern logic (current)
+        doc.fillColor(darkBlue).fontSize(22).font('Helvetica-Bold').text('EXPORTEASE', 40, 50);
+        doc.fontSize(9).font('Helvetica-Bold').fillColor(textGray).text('GLOBAL TRADE & EXPORT SOLUTIONS', 40, 75);
+        doc.fontSize(9).font('Helvetica').fillColor(textGray).text('Plot 14, Sector A, Industrial Trade Zone, Lahore, Punjab, Pakistan\nPhone: +92 300 1234567   |   Email: trade@exportease.com   |   www.exportease.com', 40, 88, { lineGap: 2 });
 
-      // Total
-      doc.font('Helvetica-Bold').text('Total Amount', 40, y + 20 + tH + 6, { width: 350, align: 'right' });
-      doc.text(Number(amount).toLocaleString('en-US') + ' PKR', 485, y + 20 + tH + 6, { width: 80, align: 'right' });
+        doc.fontSize(16).font('Helvetica-Bold').fillColor(darkBlue).text('COMMERCIAL INVOICE', 350, 50, { width: 220, align: 'right' });
+        doc.fontSize(9).font('Helvetica-Oblique').fillColor(textGray).text('Tax / Payment Document', 350, 70, { width: 220, align: 'right' });
 
-      // PAYMENT TERMS
-      y += 90;
-      drawSectionTitle('PAYMENT TERMS', y);
-      y += 15;
-      doc.rect(40, y, 532, 40).strokeColor(border).stroke();
-      doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text('PAYMENT TERMS', 45, y + 6);
-      doc.fontSize(10).font('Helvetica').fillColor(textDark).text(paymentTerms || 'N/A', 45, y + 20);
+        // Meta Info Bar
+        let y = 130;
+        doc.rect(40, y, 532, 35).fill('#F1F5F9');
+        doc.moveTo(306, y).lineTo(306, y + 35).strokeColor('white').lineWidth(2).stroke();
+        doc.lineWidth(1);
 
-      // Declaration
-      y += 60;
-      const ciDec = settings.documentTemplates?.proformaInvoice?.declaration || 'We hereby certify that this Commercial Invoice is true and correct, and that the goods described above have been exported\nin accordance with the terms stated herein.';
-      doc.fontSize(9).font('Helvetica-Oblique').fillColor(textGray).text(ciDec, 40, y, { lineGap: 2 });
+        doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text('INVOICE NO.', 45, y + 6);
+        doc.fontSize(10).font('Helvetica-Bold').fillColor(textDark).text(`CI-2026-${uniqueSuffix.toString().slice(-4)}`, 45, y + 18);
 
-      // Signatures
-      y += 40;
-      doc.fontSize(9).font('Helvetica').fillColor(textDark).text("Buyer's Acknowledgement", 40, y);
-      doc.text('Name: ___________________________', 40, y + 20);
-      doc.text('Designation: _____________________', 40, y + 35);
+        doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text('DATE OF ISSUE', 311, y + 6);
+        doc.fontSize(10).font('Helvetica-Bold').fillColor(textDark).text(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), 311, y + 18);
 
-      doc.fontSize(9).font('Helvetica').text('Authorized Signatory â€” ExportEase Pvt. Ltd.', 320, y);
-      doc.fontSize(9).font('Helvetica-Oblique').fillColor(textGray).text('Company Seal / Stamp', 320, y + 15);
+        // Helper function for sections
+        const drawSectionTitle = (title, yPos) => {
+          doc.fontSize(10).font('Helvetica-Bold').fillColor(darkBlue).text(title, 40, yPos);
+        };
 
-      // Footer
-      doc.moveTo(40, 720).lineTo(572, 720).strokeColor(border).lineWidth(1).stroke();
-      doc.fontSize(8).font('Helvetica').fillColor(textGray);
-      doc.text('ExportEase Pvt. Ltd.   |   www.exportease.com   |   trade@exportease.com', 40, 730, { align: 'center' });
+        // BUYER / CLIENT DETAILS
+        y += 60;
+        drawSectionTitle('BUYER / CLIENT DETAILS', y);
+        y += 15;
+        doc.rect(40, y, 532, 45).strokeColor(border).stroke();
+        doc.moveTo(306, y).lineTo(306, y + 45).strokeColor(border).stroke();
+
+        doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text('BUYER / CLIENT NAME', 45, y + 6);
+        doc.fontSize(10).font('Helvetica').fillColor(textDark).text(buyerName || 'N/A', 45, y + 20);
+
+        doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text('CLIENT ADDRESS', 311, y + 6);
+        doc.fontSize(10).font('Helvetica').fillColor(textDark).text((buyerAddress || 'N/A').replace(/\n/g, ', '), 311, y + 20, { width: 250, height: 20, ellipsis: true });
+
+        // PORT DETAILS
+        y += 65;
+        drawSectionTitle('PORT DETAILS', y);
+        y += 15;
+        doc.rect(40, y, 532, 40).strokeColor(border).stroke();
+        doc.moveTo(306, y).lineTo(306, y + 40).strokeColor(border).stroke();
+
+        doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text('PORT OF LOADING', 45, y + 6);
+        doc.fontSize(10).font('Helvetica').fillColor(textDark).text(portOfLoading || 'N/A', 45, y + 20);
+
+        doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text('PORT OF DISCHARGE', 311, y + 6);
+        doc.fontSize(10).font('Helvetica').fillColor(textDark).text(portOfDischarge || 'N/A', 311, y + 20);
+
+        // GOODS DETAILS
+        y += 60;
+        drawSectionTitle('GOODS DETAILS', y);
+        y += 15;
+        doc.rect(40, y, 532, 20).fillColor(darkBlue).fill();
+
+        doc.fillColor('white').fontSize(9).font('Helvetica-Bold');
+        doc.text('Product Description', 45, y + 6, { width: 205, align: 'center' });
+        doc.text('HS Code', 250, y + 6, { width: 80, align: 'center' });
+        doc.text('Quantity', 330, y + 6, { width: 70, align: 'center' });
+        doc.text('Unit Price (PKR)', 400, y + 6, { width: 85, align: 'center' });
+        doc.text('Amount (PKR)', 485, y + 6, { width: 85, align: 'center' });
+
+        // Draw grid lines for table
+        const tH = 25; // row height
+        doc.rect(40, y + 20, 532, tH).strokeColor(border).stroke();
+        doc.rect(40, y + 20 + tH, 532, tH).strokeColor(border).stroke();
+
+        doc.lineWidth(1);
+        const xs = [250, 330, 400, 485];
+        // Header dividers
+        xs.forEach(xPos => {
+          doc.moveTo(xPos, y).lineTo(xPos, y + 20).strokeColor('white').stroke();
+          doc.moveTo(xPos, y + 20).lineTo(xPos, y + 20 + tH).strokeColor(border).stroke();
+        });
+
+        // Total row verticals: 400, 485
+        doc.moveTo(400, y + 20 + tH).lineTo(400, y + 20 + tH * 2).strokeColor(border).stroke();
+        doc.moveTo(485, y + 20 + tH).lineTo(485, y + 20 + tH * 2).strokeColor(border).stroke();
+
+        // Data
+        doc.fillColor(textDark).fontSize(10).font('Helvetica');
+        doc.text(description || 'N/A', 45, y + 26, { width: 200, align: 'left' });
+        doc.text(hsCode || 'N/A', 250, y + 26, { width: 80, align: 'center' });
+        doc.text(quantity || '1', 330, y + 26, { width: 70, align: 'center' });
+        doc.text(Number(parseFloat(unitPrice || 0).toFixed(2)).toLocaleString('en-US'), 400, y + 26, { width: 85, align: 'center' });
+        doc.text(Number(amount).toLocaleString('en-US'), 485, y + 26, { width: 80, align: 'right' });
+
+        // Total
+        doc.font('Helvetica-Bold').text('Total Amount', 40, y + 20 + tH + 6, { width: 350, align: 'right' });
+        doc.text(Number(amount).toLocaleString('en-US') + ' PKR', 485, y + 20 + tH + 6, { width: 80, align: 'right' });
+
+        // PAYMENT TERMS
+        y += 90;
+        drawSectionTitle('PAYMENT TERMS', y);
+        y += 15;
+        doc.rect(40, y, 532, 40).strokeColor(border).stroke();
+        doc.fontSize(8).font('Helvetica-Bold').fillColor(textGray).text('PAYMENT TERMS', 45, y + 6);
+        doc.fontSize(10).font('Helvetica').fillColor(textDark).text(paymentTerms || 'N/A', 45, y + 20);
+
+        // Declaration
+        y = renderCustomFields(doc, y + 45);
+        y += 20;
+        const ciClauses = settings.documentTemplates?.commercialInvoice?.clauses || [];
+        if (ciClauses.length > 0) {
+          let nextY = y;
+          ciClauses.forEach((clause, index) => {
+            nextY = drawGenericClause(index + 1, clause.title, replaceVars(clause.text), nextY + 10, primaryColor, textGray);
+          });
+          y = nextY;
+        } else {
+          const ciDec = settings.documentTemplates?.proformaInvoice?.declaration || 'We hereby certify that this Commercial Invoice is true and correct, and that the goods described above have been exported\nin accordance with the terms stated herein.';
+          doc.fontSize(9).font('Helvetica-Oblique').fillColor(textGray).text(ciDec, 40, y, { lineGap: 2 });
+        }
+
+        // Signatures
+        y += 40;
+        doc.fontSize(9).font('Helvetica').fillColor(textDark).text("Buyer's Acknowledgement", 40, y);
+        doc.text('Name: ___________________________', 40, y + 20);
+        doc.text('Designation: _____________________', 40, y + 35);
+
+        doc.fontSize(9).font('Helvetica').text('Authorized Signatory — ExportEase Pvt. Ltd.', 320, y);
+        doc.fontSize(9).font('Helvetica-Oblique').fillColor(textGray).text('Company Seal / Stamp', 320, y + 15);
+
+        // Footer
+        doc.moveTo(40, 720).lineTo(572, 720).strokeColor(border).lineWidth(1).stroke();
+        doc.fontSize(8).font('Helvetica').fillColor(textGray);
+        doc.text('ExportEase Pvt. Ltd.   |   www.exportease.com   |   trade@exportease.com', 40, 730, { align: 'center' });
+      }
     }
 
     doc.end();

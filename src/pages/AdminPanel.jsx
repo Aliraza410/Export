@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Icon from "../components/Icon.jsx";
 import Badge from "../components/Badge.jsx";
 import StatCard from "../components/StatCard.jsx";
@@ -29,6 +29,45 @@ const AdminPanel = ({ onNavigate }) => {
   const [notification, setNotification] = useState(null);
   const [contentTab, setContentTab] = useState('links');
   const [expandedClauseIndex, setExpandedClauseIndex] = useState(null);
+    const [selectedDocTypeForFields, setSelectedDocTypeForFields] = useState('Commercial Invoice');
+  const [selectedDocTypeForClauses, setSelectedDocTypeForClauses] = useState('Commercial Invoice');
+  const dragItem = useRef(null);
+  const dragOverItem = useRef(null);
+
+  const handleSortClauses = () => {
+    const dt = { ...(settings.documentTemplates || {}) };
+    let docKey = 'commercialInvoice';
+    if (selectedDocTypeForClauses === 'Proforma Invoice') docKey = 'proformaInvoice';
+    if (selectedDocTypeForClauses === 'Packing List') docKey = 'packingList';
+    if (selectedDocTypeForClauses === 'Export Contract') docKey = 'exportContract';
+    
+    if (!dt[docKey]) dt[docKey] = { clauses: [] };
+    if (!dt[docKey].clauses) dt[docKey].clauses = [];
+    
+    const clauses = [...dt[docKey].clauses];
+    const draggedItemContent = clauses.splice(dragItem.current, 1)[0];
+    clauses.splice(dragOverItem.current, 0, draggedItemContent);
+    dragItem.current = null;
+    dragOverItem.current = null;
+    
+    dt[docKey].clauses = clauses;
+    setSettings({ ...settings, documentTemplates: dt });
+  };
+
+  const handleSortFields = () => {
+    const dt = { ...(settings.documentCustomFields || {}) };
+    if (!dt[selectedDocTypeForFields]) dt[selectedDocTypeForFields] = [];
+    
+    const fields = [...dt[selectedDocTypeForFields]];
+    const draggedItemContent = fields.splice(dragItem.current, 1)[0];
+    fields.splice(dragOverItem.current, 0, draggedItemContent);
+    dragItem.current = null;
+    dragOverItem.current = null;
+    
+    dt[selectedDocTypeForFields] = fields;
+    setSettings({ ...settings, documentCustomFields: dt });
+  };
+
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
@@ -148,9 +187,9 @@ const AdminPanel = ({ onNavigate }) => {
             <div style={{ background: "white", borderRadius: 16, border: "1px solid #F1F5F9", overflow: "hidden" }}>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "space-between", alignItems: "center", padding: "18px 24px", borderBottom: "1px solid #F9FAFB" }}>
                 <h3 style={{ fontSize: 15, fontWeight: 700, color: "#0A1628", margin: 0 }}>User Management</h3>
-                <div style={{ display: "flex", flex: 1, minWidth: "200px", gap: 10 }}>
-                  <input placeholder="Search users..." style={{ flex: 1, padding: "7px 12px", border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 13, outline: "none", fontFamily: "inherit" }} />
-                  <button onClick={handleAdd} style={{ padding: "7px 14px", background: "#1E6FD9", color: "white", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>+ Add User</button>
+                <div style={{ display: "flex", flexWrap: "wrap", flex: 1, minWidth: "200px", gap: 10 }}>
+                  <input placeholder="Search users..." style={{ flex: 1, minWidth: "120px", padding: "7px 12px", border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 13, outline: "none", fontFamily: "inherit" }} />
+                  <button onClick={handleAdd} style={{ padding: "7px 14px", background: "#1E6FD9", color: "white", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", flex: "1 1 auto" }}>+ Add User</button>
                 </div>
               </div>
               <div className="desktop-table" style={{ overflowX: "auto" }}>
@@ -168,9 +207,9 @@ const AdminPanel = ({ onNavigate }) => {
                         <td style={{ padding: "12px 16px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             {user.profilePic ? (
-                              <img src={user.profilePic.startsWith('http') ? user.profilePic : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${user.profilePic.startsWith('/') ? '' : '/'}${user.profilePic}`} alt={user.name} style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=1E6FD9&color=fff`; }} referrerPolicy="no-referrer" />
+                              <img src={user.profilePic.startsWith('http') ? user.profilePic : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${user.profilePic.startsWith('/') ? '' : '/'}${user.profilePic}`} alt={user.name} style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=1E6FD9&color=fff`; }} referrerPolicy="no-referrer" />
                             ) : (
-                              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1E6FD9", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700 }}>{user.name.split(" ").map(n => n[0]).join("")}</div>
+                              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1E6FD9", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{user.name.split(" ").map(n => n[0]).join("")}</div>
                             )}
                             <div>
                               <div style={{ fontSize: 13, fontWeight: 600, color: "#0A1628" }}>{user.name}</div>
@@ -199,7 +238,11 @@ const AdminPanel = ({ onNavigate }) => {
                   <div key={user.name} style={{ border: "1px solid #E5E7EB", borderRadius: 12, padding: 16, background: "#F8FAFC" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1E6FD9", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700 }}>{user.name.split(" ").map(n => n[0]).join("")}</div>
+                        {user.profilePic ? (
+<img src={user.profilePic.startsWith('http') ? user.profilePic : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${user.profilePic.startsWith('/') ? '' : '/'}${user.profilePic}`} alt={user.name} style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=1E6FD9&color=fff`; }} referrerPolicy="no-referrer" />
+) : (
+<div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1E6FD9", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{user.name.split(" ").map(n => n[0]).join("")}</div>
+)}
                         <div>
                           <div style={{ fontSize: 13, fontWeight: 600, color: "#0A1628" }}>{user.name}</div>
                           <div style={{ fontSize: 11, color: "#9CA3AF" }}>{user.company}</div>
@@ -273,6 +316,8 @@ const AdminPanel = ({ onNavigate }) => {
                 <button onClick={() => setContentTab('phases')} style={{ background: "none", border: "none", padding: "16px 4px", borderBottom: contentTab === 'phases' ? "2px solid #1E6FD9" : "2px solid transparent", color: contentTab === 'phases' ? "#1E6FD9" : "#64748B", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Guidance Roadmap</button>
                 <button onClick={() => setContentTab('announcements')} style={{ background: "none", border: "none", padding: "16px 4px", borderBottom: contentTab === 'announcements' ? "2px solid #1E6FD9" : "2px solid transparent", color: contentTab === 'announcements' ? "#1E6FD9" : "#64748B", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Announcements</button>
                 <button onClick={() => setContentTab('templates')} style={{ background: "none", border: "none", padding: "16px 4px", borderBottom: contentTab === 'templates' ? "2px solid #1E6FD9" : "2px solid transparent", color: contentTab === 'templates' ? "#1E6FD9" : "#64748B", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Document Templates</button>
+                <button onClick={() => setContentTab('custom_fields')} style={{ background: "none", border: "none", padding: "16px 4px", borderBottom: contentTab === 'custom_fields' ? "2px solid #1E6FD9" : "2px solid transparent", color: contentTab === 'custom_fields' ? "#1E6FD9" : "#64748B", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Custom Fields</button>
+                <button onClick={() => setContentTab('theme_layout')} style={{ background: "none", border: "none", padding: "16px 4px", borderBottom: contentTab === 'theme_layout' ? "2px solid #1E6FD9" : "2px solid transparent", color: contentTab === 'theme_layout' ? "#1E6FD9" : "#64748B", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Theme & Layout</button>
               </div>
 
               {contentTab === 'links' && (
@@ -494,128 +539,293 @@ const AdminPanel = ({ onNavigate }) => {
                 </div>
               )}
 
-              {contentTab === 'templates' && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-                  {/* Invoices */}
-                  <div style={{ background: "#F8FAFC", padding: 20, borderRadius: 12, border: "1px solid #E2E8F0" }}>
-                    <h4 style={{ fontSize: 14, fontWeight: 700, color: "#0A1628", margin: "0 0 12px" }}>Invoice Declarations</h4>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      <label style={{ fontSize: 13, fontWeight: 600, color: "#475569" }}>Proforma & Commercial Invoice Terms/Declaration</label>
-                      <textarea 
-                        value={settings.documentTemplates?.proformaInvoice?.declaration || ''}
-                        onChange={(e) => {
-                          const dt = { ...(settings.documentTemplates || {}) };
-                          if (!dt.proformaInvoice) dt.proformaInvoice = {};
-                          dt.proformaInvoice.declaration = e.target.value;
-                          setSettings({ ...settings, documentTemplates: dt });
-                        }}
-                        style={{ width: "100%", padding: 12, border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 13, minHeight: 80, fontFamily: "inherit" }}
-                      />
-                    </div>
-                  </div>
+              {contentTab === 'templates' && (() => {
+                let docKey = 'commercialInvoice';
+                if (selectedDocTypeForClauses === 'Proforma Invoice') docKey = 'proformaInvoice';
+                if (selectedDocTypeForClauses === 'Packing List') docKey = 'packingList';
+                if (selectedDocTypeForClauses === 'Export Contract') docKey = 'exportContract';
+                
+                const clausesList = settings.documentTemplates?.[docKey]?.clauses || [];
 
-                  {/* Packing List */}
-                  <div style={{ background: "#F8FAFC", padding: 20, borderRadius: 12, border: "1px solid #E2E8F0" }}>
-                    <h4 style={{ fontSize: 14, fontWeight: 700, color: "#0A1628", margin: "0 0 12px" }}>Packing List Footer</h4>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      <textarea 
-                        value={settings.documentTemplates?.packingList?.footerNotes || ''}
-                        onChange={(e) => {
-                          const dt = { ...(settings.documentTemplates || {}) };
-                          if (!dt.packingList) dt.packingList = {};
-                          dt.packingList.footerNotes = e.target.value;
-                          setSettings({ ...settings, documentTemplates: dt });
-                        }}
-                        style={{ width: "100%", padding: 12, border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 13, minHeight: 60, fontFamily: "inherit" }}
-                      />
+                return (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                    <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
+                      <label style={{ fontSize: 14, fontWeight: 600, color: "#374151" }}>Select Document Type:</label>
+                      <select 
+                        value={selectedDocTypeForClauses} 
+                        onChange={(e) => setSelectedDocTypeForClauses(e.target.value)}
+                        style={{ padding: "8px 12px", border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 14, outline: "none", background: "white", flex: "1 1 200px" }}
+                      >
+                        <option value="Commercial Invoice">Commercial Invoice</option>
+                        <option value="Packing List">Packing List</option>
+                        <option value="Export Contract">Export Contract</option>
+                        <option value="Proforma Invoice">Proforma Invoice</option>
+                      </select>
                     </div>
-                  </div>
 
-                  {/* Export Contract Clauses */}
-                  <div style={{ background: "#F8FAFC", padding: 20, borderRadius: 12, border: "1px solid #E2E8F0" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                      <h4 style={{ fontSize: 14, fontWeight: 700, color: "#0A1628", margin: 0 }}>Export Contract Clauses</h4>
-                      <button 
-                        onClick={() => {
-                          const dt = { ...(settings.documentTemplates || {}) };
-                          if (!dt.exportContract) dt.exportContract = { clauses: [] };
-                          if (!dt.exportContract.clauses) dt.exportContract.clauses = [];
-                          dt.exportContract.clauses.push({ title: "New Clause", text: "" });
-                          setSettings({ ...settings, documentTemplates: dt });
-                        }}
-                        style={{ padding: "6px 12px", background: "white", color: "#1E6FD9", border: "1px solid #1E6FD9", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-                      >+ Add Clause</button>
-                    </div>
-                    <div style={{ background: "#EFF6FF", color: "#1E6FD9", padding: "12px 16px", borderRadius: 8, fontSize: 13, fontWeight: 500, marginBottom: 16 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
-                        <Icon name="document" size={18} />
-                        Tip: Use these variables in your text, and they will automatically be replaced with real data when a user generates the PDF:
+                    <div style={{ background: "#F8FAFC", padding: 16, borderRadius: 12, border: "1px solid #E2E8F0" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                        <h4 style={{ fontSize: 14, fontWeight: 700, color: "#0A1628", margin: 0 }}>{selectedDocTypeForClauses} Clauses / Terms</h4>
+                        <button 
+                          onClick={() => {
+                            const dt = { ...(settings.documentTemplates || {}) };
+                            if (!dt[docKey]) dt[docKey] = { clauses: [] };
+                            if (!dt[docKey].clauses) dt[docKey].clauses = [];
+                            dt[docKey].clauses.push({ title: "New Clause", text: "" });
+                            setSettings({ ...settings, documentTemplates: dt });
+                          }}
+                          style={{ padding: "6px 12px", background: "white", color: "#1E6FD9", border: "1px solid #1E6FD9", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                        >+ Add Clause / Term</button>
                       </div>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        <code style={{ background: "white", color: "#1E6FD9", padding: "4px 8px", borderRadius: 4, fontSize: 12, border: "1px solid #BFDBFE" }}>{"{buyerName}"}</code>
-                        <code style={{ background: "white", color: "#1E6FD9", padding: "4px 8px", borderRadius: 4, fontSize: 12, border: "1px solid #BFDBFE" }}>{"{description}"}</code>
-                        <code style={{ background: "white", color: "#1E6FD9", padding: "4px 8px", borderRadius: 4, fontSize: 12, border: "1px solid #BFDBFE" }}>{"{contractValue}"}</code>
-                        <code style={{ background: "white", color: "#1E6FD9", padding: "4px 8px", borderRadius: 4, fontSize: 12, border: "1px solid #BFDBFE" }}>{"{incoterms}"}</code>
-                        <code style={{ background: "white", color: "#1E6FD9", padding: "4px 8px", borderRadius: 4, fontSize: 12, border: "1px solid #BFDBFE" }}>{"{deliveryDate}"}</code>
-                        <code style={{ background: "white", color: "#1E6FD9", padding: "4px 8px", borderRadius: 4, fontSize: 12, border: "1px solid #BFDBFE" }}>{"{governingLaw}"}</code>
+                      
+                      <div style={{ background: "#EFF6FF", color: "#1E6FD9", padding: "12px 16px", borderRadius: 8, fontSize: 13, fontWeight: 500, marginBottom: 16 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                          <Icon name="document" size={18} />
+                          Tip: Use variables like {'{buyerName}'}, {'{description}'}, {'{contractValue}'}, {'{incoterms}'}, {'{deliveryDate}'}, {'{governingLaw}'} in your text. Drag and drop items to reorder them.
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                      {(settings.documentTemplates?.exportContract?.clauses || []).map((clause, idx) => {
-                        const isExpanded = expandedClauseIndex === idx;
-                        return (
-                          <div key={idx} style={{ background: "white", padding: 16, borderRadius: 8, border: "1px solid #E5E7EB" }}>
-                            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-                              <div style={{ width: 30, height: 30, background: "#F1F5F9", borderRadius: 15, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12, color: "#475569", flexShrink: 0 }}>
-                                {idx + 1}
+                      
+                      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                        {clausesList.map((clause, idx) => {
+                          const isExpanded = expandedClauseIndex === idx;
+                          return (
+                            <div 
+                              key={idx} 
+                              draggable 
+                              onDragStart={(e) => (dragItem.current = idx)} 
+                              onDragEnter={(e) => (dragOverItem.current = idx)} 
+                              onDragEnd={handleSortClauses} 
+                              onDragOver={(e) => e.preventDefault()}
+                              style={{ background: "white", padding: 16, borderRadius: 8, border: "1px solid #E5E7EB", cursor: "grab" }}
+                            >
+                              <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                                <div style={{ cursor: "grab", color: "#CBD5E1", display: "flex", alignItems: "center" }}>
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                </div>
+                                <div style={{ width: 30, height: 30, background: "#F1F5F9", borderRadius: 15, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12, color: "#475569", flexShrink: 0 }}>
+                                  {idx + 1}
+                                </div>
+                                <div style={{ flex: "1 1 200px", fontSize: 14, fontWeight: 600, color: "#0A1628" }}>
+                                  {clause.title || "Untitled Clause"}
+                                </div>
+                                <button 
+                                  onClick={() => setExpandedClauseIndex(isExpanded ? null : idx)}
+                                  style={{ padding: "6px 12px", background: "white", color: "#1E6FD9", border: "1px solid #1E6FD9", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                                >{isExpanded ? "Close" : "Edit"}</button>
                               </div>
-                              <div style={{ flex: "1 1 200px", fontSize: 14, fontWeight: 600, color: "#0A1628" }}>
-                                {clause.title || "Untitled Clause"}
-                              </div>
-                              <button 
-                                onClick={() => setExpandedClauseIndex(isExpanded ? null : idx)}
-                                style={{ padding: "6px 12px", background: "white", color: "#1E6FD9", border: "1px solid #1E6FD9", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-                              >{isExpanded ? "Close" : "Edit"}</button>
-                            </div>
-                            
-                            {isExpanded && (
-                              <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10, borderTop: "1px dashed #E2E8F0", paddingTop: 16 }}>
-                                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                                  <input 
-                                    value={clause.title}
+                              
+                              {isExpanded && (
+                                <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10, borderTop: "1px dashed #E2E8F0", paddingTop: 16 }}>
+                                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                                    <input 
+                                      value={clause.title}
+                                      onChange={(e) => {
+                                        const dt = { ...(settings.documentTemplates || {}) };
+                                        dt[docKey].clauses[idx].title = e.target.value;
+                                        setSettings({ ...settings, documentTemplates: dt });
+                                      }}
+                                      placeholder="Clause Title"
+                                      style={{ flex: "1 1 200px", padding: "8px 12px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13, fontWeight: 600 }}
+                                    />
+                                    <button 
+                                      onClick={() => {
+                                        const dt = { ...(settings.documentTemplates || {}) };
+                                        dt[docKey].clauses.splice(idx, 1);
+                                        setSettings({ ...settings, documentTemplates: dt });
+                                      }}
+                                      style={{ padding: "8px 12px", background: "#FEE2E2", color: "#EF4444", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                                    >Remove</button>
+                                  </div>
+                                  <textarea 
+                                    value={clause.text}
                                     onChange={(e) => {
                                       const dt = { ...(settings.documentTemplates || {}) };
-                                      dt.exportContract.clauses[idx].title = e.target.value;
+                                      dt[docKey].clauses[idx].text = e.target.value;
                                       setSettings({ ...settings, documentTemplates: dt });
                                     }}
-                                    placeholder="Clause Title"
-                                    style={{ flex: "1 1 200px", padding: "8px 12px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13, fontWeight: 600 }}
+                                    placeholder="Clause body text..."
+                                    style={{ width: "100%", padding: "12px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13, minHeight: 80, fontFamily: "inherit" }}
                                   />
-                                  <button 
-                                    onClick={() => {
-                                      const dt = { ...(settings.documentTemplates || {}) };
-                                      dt.exportContract.clauses.splice(idx, 1);
-                                      setSettings({ ...settings, documentTemplates: dt });
-                                    }}
-                                    style={{ padding: "8px 12px", background: "#FEE2E2", color: "#EF4444", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-                                  >Remove</button>
                                 </div>
-                                <textarea 
-                                  value={clause.text}
-                                  onChange={(e) => {
-                                    const dt = { ...(settings.documentTemplates || {}) };
-                                    dt.exportContract.clauses[idx].text = e.target.value;
-                                    setSettings({ ...settings, documentTemplates: dt });
-                                  }}
-                                  placeholder="Clause body text..."
-                                  style={{ width: "100%", padding: "12px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13, minHeight: 80, fontFamily: "inherit" }}
-                                />
-                              </div>
-                            )}
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+              
+              {contentTab === 'custom_fields' && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                  <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
+                    <label style={{ fontSize: 14, fontWeight: 600, color: "#374151" }}>Select Document Type:</label>
+                    <select 
+                      value={selectedDocTypeForFields} 
+                      onChange={(e) => setSelectedDocTypeForFields(e.target.value)}
+                      style={{ padding: "8px 12px", border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 14, outline: "none", background: "white", flex: "1 1 200px" }}
+                    >
+                      <option value="Commercial Invoice">Commercial Invoice</option>
+                      <option value="Packing List">Packing List</option>
+                      <option value="Export Contract">Export Contract</option>
+                      <option value="Proforma Invoice">Proforma Invoice</option>
+                    </select>
+                  </div>
+                  
+                  <div style={{ background: "#F8FAFC", padding: 16, borderRadius: 12, border: "1px solid #E2E8F0" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
+                      <h4 style={{ fontSize: 14, fontWeight: 700, color: "#0A1628", margin: 0 }}>Fields for {selectedDocTypeForFields}</h4>
+                      <button 
+                        onClick={() => {
+                          const dt = { ...(settings.documentCustomFields || {}) };
+                          if (!dt[selectedDocTypeForFields]) dt[selectedDocTypeForFields] = [];
+                          dt[selectedDocTypeForFields].push({ name: `field_${Date.now()}`, label: "New Field", type: "text" });
+                          setSettings({ ...settings, documentCustomFields: dt });
+                        }}
+                        style={{ padding: "6px 12px", background: "white", color: "#1E6FD9", border: "1px solid #1E6FD9", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                      >+ Add Custom Field</button>
+                    </div>
+                    
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                      {((settings.documentCustomFields || {})[selectedDocTypeForFields] || []).length === 0 && (
+                        <div style={{ fontSize: 13, color: "#9CA3AF" }}>No custom fields added yet.</div>
+                      )}
+                      {((settings.documentCustomFields || {})[selectedDocTypeForFields] || []).map((field, idx) => (
+                        <div 
+                          key={idx} 
+                          draggable 
+                          onDragStart={(e) => (dragItem.current = idx)} 
+                          onDragEnter={(e) => (dragOverItem.current = idx)} 
+                          onDragEnd={handleSortFields} 
+                          onDragOver={(e) => e.preventDefault()}
+                          style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", background: "white", padding: 12, borderRadius: 8, border: "1px solid #E5E7EB", cursor: "grab" }}
+                        >
+                          <div style={{ cursor: "grab", color: "#CBD5E1", display: "flex", alignItems: "center" }}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
                           </div>
-                        );
-                      })}
+                          <div style={{ display: "flex", flexDirection: "column", flex: "1 1 150px" }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", marginBottom: 4 }}>Label (Display Name)</span>
+                            <input 
+                              type="text" 
+                              value={field.label} 
+                              onChange={(e) => {
+                                const dt = { ...(settings.documentCustomFields || {}) };
+                                dt[selectedDocTypeForFields][idx].label = e.target.value;
+                                setSettings({ ...settings, documentCustomFields: dt });
+                              }}
+                              style={{ padding: "6px 10px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13 }}
+                            />
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", flex: "1 1 150px" }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", marginBottom: 4 }}>Variable Name</span>
+                            <input 
+                              type="text" 
+                              value={field.name} 
+                              onChange={(e) => {
+                                const dt = { ...(settings.documentCustomFields || {}) };
+                                dt[selectedDocTypeForFields][idx].name = e.target.value.replace(/[^a-zA-Z0-9_]/g, '');
+                                setSettings({ ...settings, documentCustomFields: dt });
+                              }}
+                              style={{ padding: "6px 10px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13 }}
+                            />
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", flex: "1 1 120px" }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", marginBottom: 4 }}>Input Type</span>
+                            <select 
+                              value={field.type} 
+                              onChange={(e) => {
+                                const dt = { ...(settings.documentCustomFields || {}) };
+                                dt[selectedDocTypeForFields][idx].type = e.target.value;
+                                setSettings({ ...settings, documentCustomFields: dt });
+                              }}
+                              style={{ padding: "6px 10px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13, background: "white" }}
+                            >
+                              <option value="text">Short Text</option>
+                              <option value="textarea">Long Text</option>
+                              <option value="number">Number</option>
+                              <option value="date">Date</option>
+                            </select>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              const dt = { ...(settings.documentCustomFields || {}) };
+                              dt[selectedDocTypeForFields].splice(idx, 1);
+                              setSettings({ ...settings, documentCustomFields: dt });
+                            }}
+                            style={{ padding: "6px 10px", background: "#FEE2E2", color: "#EF4444", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer", alignSelf: "flex-end", marginBottom: 2 }}
+                          >Remove</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {contentTab === 'theme_layout' && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                  <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
+                    <label style={{ fontSize: 14, fontWeight: 600, color: "#374151" }}>Select Document Type:</label>
+                    <select 
+                      value={selectedDocTypeForFields} 
+                      onChange={(e) => setSelectedDocTypeForFields(e.target.value)}
+                      style={{ padding: "8px 12px", border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 14, outline: "none", background: "white", flex: "1 1 200px" }}
+                    >
+                      <option value="Commercial Invoice">Commercial Invoice</option>
+                      <option value="Packing List">Packing List</option>
+                      <option value="Export Contract">Export Contract</option>
+                      <option value="Proforma Invoice">Proforma Invoice</option>
+                    </select>
+                  </div>
+
+                  <div style={{ background: "#F8FAFC", padding: 16, borderRadius: 12, border: "1px solid #E2E8F0", display: "grid", gap: 16 }}>
+                    <h4 style={{ fontSize: 14, fontWeight: 700, color: "#0A1628", margin: 0 }}>Theme Settings for {selectedDocTypeForFields}</h4>
+                    
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 16 }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Primary Color</label>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <input 
+                            type="color" 
+                            value={settings.documentThemes?.[selectedDocTypeForFields]?.primaryColor || "#1A2942"}
+                            onChange={(e) => {
+                              const dt = { ...(settings.documentThemes || {}) };
+                              if (!dt[selectedDocTypeForFields]) dt[selectedDocTypeForFields] = { layoutPattern: "modern" };
+                              dt[selectedDocTypeForFields].primaryColor = e.target.value;
+                              setSettings({ ...settings, documentThemes: dt });
+                            }}
+                            style={{ width: 40, height: 40, padding: 0, border: "none", borderRadius: 8, cursor: "pointer", flexShrink: 0 }}
+                          />
+                          <input 
+                            type="text" 
+                            value={settings.documentThemes?.[selectedDocTypeForFields]?.primaryColor || "#1A2942"}
+                            onChange={(e) => {
+                              const dt = { ...(settings.documentThemes || {}) };
+                              if (!dt[selectedDocTypeForFields]) dt[selectedDocTypeForFields] = { layoutPattern: "modern" };
+                              dt[selectedDocTypeForFields].primaryColor = e.target.value;
+                              setSettings({ ...settings, documentThemes: dt });
+                            }}
+                            style={{ flex: 1, padding: "8px 12px", border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 13, outline: "none", background: "white", height: 40, boxSizing: "border-box" }}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Layout Pattern</label>
+                        <select 
+                          value={settings.documentThemes?.[selectedDocTypeForFields]?.layoutPattern || "modern"}
+                          onChange={(e) => {
+                            const dt = { ...(settings.documentThemes || {}) };
+                            if (!dt[selectedDocTypeForFields]) dt[selectedDocTypeForFields] = { primaryColor: "#1A2942" };
+                            dt[selectedDocTypeForFields].layoutPattern = e.target.value;
+                            setSettings({ ...settings, documentThemes: dt });
+                          }}
+                          style={{ width: "100%", padding: "8px 12px", border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 13, outline: "none", background: "white", height: 40, boxSizing: "border-box" }}
+                        >
+                          <option value="modern">Modern (Boxed Grid)</option>
+                          <option value="classic">Classic (Traditional Table)</option>
+                          <option value="minimal">Minimal (Clean Lines)</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -629,7 +839,7 @@ const AdminPanel = ({ onNavigate }) => {
       
       {/* Modals */}
       {modalType && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(10,22,40,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(10,22,40,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
           <div style={{ background: "white", borderRadius: 16, width: "100%", maxWidth: 450, overflow: "hidden", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)" }}>
             <div style={{ padding: "20px 24px", borderBottom: "1px solid #F1F5F9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#0A1628" }}>
@@ -642,9 +852,9 @@ const AdminPanel = ({ onNavigate }) => {
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
                     {selectedUser.profilePic ? (
-                      <img src={selectedUser.profilePic.startsWith('http') ? selectedUser.profilePic : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${selectedUser.profilePic.startsWith('/') ? '' : '/'}${selectedUser.profilePic}`} alt={selectedUser.name} style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover" }} onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedUser.name)}&background=1E6FD9&color=fff`; }} referrerPolicy="no-referrer" />
+                      <img src={selectedUser.profilePic.startsWith('http') ? selectedUser.profilePic : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${selectedUser.profilePic.startsWith('/') ? '' : '/'}${selectedUser.profilePic}`} alt={selectedUser.name} style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedUser.name)}&background=1E6FD9&color=fff`; }} referrerPolicy="no-referrer" />
                     ) : (
-                      <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#1E6FD9", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700 }}>
+                      <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#1E6FD9", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700, flexShrink: 0 }}>
                         {selectedUser.name.split(" ").map(n => n[0]).join("")}
                       </div>
                     )}
@@ -653,7 +863,7 @@ const AdminPanel = ({ onNavigate }) => {
                       <div style={{ fontSize: 13, color: "#64748B" }}>{selectedUser.email}</div>
                     </div>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, background: "#F8FAFC", padding: 16, borderRadius: 12 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 16, background: "#F8FAFC", padding: 16, borderRadius: 12 }}>
                     <div>
                       <div style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Company</div>
                       <div style={{ fontSize: 13, color: "#0A1628", fontWeight: 500 }}>{selectedUser.company || 'N/A'}</div>

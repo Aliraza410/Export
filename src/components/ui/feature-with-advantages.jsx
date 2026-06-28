@@ -6,8 +6,6 @@ function Feature() {
   const features = [
     { title: "Company Setup", desc: "NTN, STRN, Chamber Membership & PSW registration — all guided." },
     { title: "Smart Documents", desc: "Auto-generate invoices, packing lists, and export contracts." },
-    { title: "Logistics Hub", desc: "Freight booking, customs clearance, and dispatch tracking." },
-    { title: "Market Insights", desc: "Real-time demand data for 50+ global import markets." },
     { title: "Cost Estimator", desc: "Accurate shipping, customs, and documentation cost forecasts." },
     { title: "Compliance Guard", desc: "Automatic alerts for regulatory changes and requirements." },
   ];

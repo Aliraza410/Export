@@ -308,7 +308,20 @@
       "declaration": "We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct. hiihi"
     },
     "packingList": {
-      "footerNotes": "Thank you for your business."
+      "footerNotes": "Thank you for your business.",
+      "clauses": []
+    }
+  },
+  "documentCustomFields": {
+    "Commercial Invoice": [],
+    "Packing List": [],
+    "Export Contract": [],
+    "Proforma Invoice": []
+  },
+  "documentThemes": {
+    "Commercial Invoice": {
+      "primaryColor": "#1A2942",
+      "layoutPattern": "modern"
     }
   }
 }

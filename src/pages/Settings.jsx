@@ -198,14 +198,7 @@ const Settings = ({ onNavigate }) => {
                 </form>
               </div>
 
-              {/* Data Management */}
-              <div style={{ background: "white", borderRadius: 16, padding: 28, border: "1px solid #F1F5F9" }}>
-                <h3 style={{ fontSize: 18, fontWeight: 700, color: "#0A1628", margin: "0 0 8px" }}>Export Data</h3>
-                <p style={{ fontSize: 14, color: "#64748B", margin: "0 0 20px" }}>Download a complete copy of all your documents, estimates, and progress history in JSON format.</p>
-                <button onClick={handleExportData} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", background: "white", border: "1px solid #E2E8F0", borderRadius: 10, fontSize: 14, fontWeight: 600, color: "#374151", cursor: "pointer", fontFamily: "inherit" }}>
-                  <Icon name="download" size={16} /> Export as JSON
-                </button>
-              </div>
+
 
               {/* Danger Zone */}
               <div style={{ background: "#FEF2F2", borderRadius: 16, padding: 28, border: "1px solid #FECACA" }}>
