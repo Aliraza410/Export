@@ -252,7 +252,7 @@ const AdminPanel = ({ onNavigate }) => {
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#475569", marginBottom: 14 }}>
                       <div><span style={{ color: "#9CA3AF" }}>Phase:</span> {user.phase}</div>
-                      <div><span style={{ color: "#9CA3AF" }}>Docs:</span> <span style={{ fontWeight: 600 }}>{user.docs}</span></div>
+                      <div><span style={{ color: "#9CA3AF" }}>Docs:</span> <span style={{ fontWeight: 600 }}>{user._count?.documents || user.docs || 0}</span></div>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button onClick={() => handleView(user)} style={{ flex: 1, padding: "8px", border: "1px solid #E5E7EB", borderRadius: 8, background: "white", fontSize: 12, fontWeight: 600, color: "#0A1628", cursor: "pointer", fontFamily: "inherit" }}>View</button>
@@ -878,7 +878,7 @@ const AdminPanel = ({ onNavigate }) => {
                     </div>
                     <div>
                       <div style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Documents</div>
-                      <div style={{ fontSize: 13, color: "#0A1628", fontWeight: 500 }}>{selectedUser.docs || 0}</div>
+                      <div style={{ fontSize: 13, color: "#0A1628", fontWeight: 500 }}>{selectedUser._count?.documents || selectedUser.docs || 0}</div>
                     </div>
                     <div style={{ gridColumn: "1 / -1" }}>
                       <div style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>User Role</div>
