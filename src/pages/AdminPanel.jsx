@@ -236,16 +236,16 @@ const AdminPanel = ({ onNavigate }) => {
               <div className="mobile-cards" style={{ padding: "0 24px 24px" }}>
                 {users.map(user => (
                   <div key={user.name} style={{ border: "1px solid #E5E7EB", borderRadius: 12, padding: 16, background: "#F8FAFC" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, gap: 10, flexWrap: "wrap" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
                         {user.profilePic ? (
 <img src={user.profilePic.startsWith('http') ? user.profilePic : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${user.profilePic.startsWith('/') ? '' : '/'}${user.profilePic}`} alt={user.name} style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=1E6FD9&color=fff`; }} referrerPolicy="no-referrer" />
 ) : (
 <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1E6FD9", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{user.name.split(" ").map(n => n[0]).join("")}</div>
 )}
-                        <div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: "#0A1628" }}>{user.name}</div>
-                          <div style={{ fontSize: 11, color: "#9CA3AF" }}>{user.company}</div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#0A1628", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user.name}</div>
+                          <div style={{ fontSize: 11, color: "#9CA3AF", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user.company}</div>
                         </div>
                       </div>
                       <Badge color={user.color}>{user.status}</Badge>
@@ -387,7 +387,7 @@ const AdminPanel = ({ onNavigate }) => {
                             setSettings({ ...settings, exportGuidancePhases: newPhases });
                           }} 
                           placeholder="Phase No."
-                          style={{ flex: "1 1 80px", minWidth: 80, padding: "8px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13 }}
+                          style={{ flex: "1 1 60px", minWidth: 60, padding: "8px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13, boxSizing: "border-box" }}
                         />
                         <input 
                           value={phase.title || ''} 
@@ -397,7 +397,7 @@ const AdminPanel = ({ onNavigate }) => {
                             setSettings({ ...settings, exportGuidancePhases: newPhases });
                           }} 
                           placeholder="Phase Title"
-                          style={{ flex: "3 1 200px", padding: "8px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13 }}
+                          style={{ flex: "3 1 150px", minWidth: 0, padding: "8px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13, boxSizing: "border-box" }}
                         />
                         <input 
                           value={phase.color || ''} 
@@ -407,7 +407,7 @@ const AdminPanel = ({ onNavigate }) => {
                             setSettings({ ...settings, exportGuidancePhases: newPhases });
                           }} 
                           placeholder="Hex Color (e.g. #10B981)"
-                          style={{ flex: "1 1 140px", minWidth: 140, padding: "8px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13 }}
+                          style={{ flex: "1 1 120px", minWidth: 100, padding: "8px", border: "1px solid #E5E7EB", borderRadius: 6, fontSize: 13, boxSizing: "border-box" }}
                         />
                         <button 
                           onClick={() => {
@@ -431,7 +431,7 @@ const AdminPanel = ({ onNavigate }) => {
                                   setSettings({ ...settings, exportGuidancePhases: newPhases });
                                 }} 
                                 placeholder="Step Title"
-                                style={{ flex: "1 1 150px", padding: "6px", border: "1px solid #E5E7EB", borderRadius: 4, fontSize: 13 }}
+                                style={{ flex: "1 1 150px", minWidth: 0, padding: "6px", border: "1px solid #E5E7EB", borderRadius: 4, fontSize: 13, boxSizing: "border-box" }}
                               />
                               <button 
                                 onClick={() => {
@@ -450,7 +450,7 @@ const AdminPanel = ({ onNavigate }) => {
                                 setSettings({ ...settings, exportGuidancePhases: newPhases });
                               }} 
                               placeholder="Step Description"
-                              style={{ width: "100%", padding: "6px", border: "1px solid #E5E7EB", borderRadius: 4, fontSize: 12, marginBottom: 8, resize: "vertical", minHeight: "50px", fontFamily: "inherit" }}
+                              style={{ width: "100%", padding: "6px", border: "1px solid #E5E7EB", borderRadius: 4, fontSize: 12, marginBottom: 8, resize: "vertical", minHeight: "50px", fontFamily: "inherit", boxSizing: "border-box" }}
                             />
                             <input 
                               value={(step.docs || []).join(", ")} 
@@ -460,7 +460,7 @@ const AdminPanel = ({ onNavigate }) => {
                                 setSettings({ ...settings, exportGuidancePhases: newPhases });
                               }} 
                               placeholder="Required Documents (comma separated, e.g. NTN Application, SECP Guide)"
-                              style={{ width: "100%", padding: "6px", border: "1px solid #E5E7EB", borderRadius: 4, fontSize: 12 }}
+                              style={{ width: "100%", padding: "6px", border: "1px solid #E5E7EB", borderRadius: 4, fontSize: 12, boxSizing: "border-box" }}
                             />
                           </div>
                         ))}
@@ -781,7 +781,7 @@ const AdminPanel = ({ onNavigate }) => {
                   <div style={{ background: "#F8FAFC", padding: 16, borderRadius: 12, border: "1px solid #E2E8F0", display: "grid", gap: 16 }}>
                     <h4 style={{ fontSize: 14, fontWeight: 700, color: "#0A1628", margin: 0 }}>Theme Settings for {selectedDocTypeForFields}</h4>
                     
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 16 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 16 }}>
                       <div>
                         <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Primary Color</label>
                         <div style={{ display: "flex", gap: 8 }}>
@@ -863,10 +863,10 @@ const AdminPanel = ({ onNavigate }) => {
                       <div style={{ fontSize: 13, color: "#64748B" }}>{selectedUser.email}</div>
                     </div>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 16, background: "#F8FAFC", padding: 16, borderRadius: 12 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 16, background: "#F8FAFC", padding: 16, borderRadius: 12 }}>
                     <div>
                       <div style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Company</div>
-                      <div style={{ fontSize: 13, color: "#0A1628", fontWeight: 500 }}>{selectedUser.company || 'N/A'}</div>
+                      <div style={{ fontSize: 13, color: "#0A1628", fontWeight: 500, wordBreak: "break-word" }}>{selectedUser.company || 'N/A'}</div>
                     </div>
                     <div>
                       <div style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Status</div>
@@ -874,13 +874,13 @@ const AdminPanel = ({ onNavigate }) => {
                     </div>
                     <div>
                       <div style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Phase</div>
-                      <div style={{ fontSize: 13, color: "#0A1628", fontWeight: 500 }}>{selectedUser.phase}</div>
+                      <div style={{ fontSize: 13, color: "#0A1628", fontWeight: 500, wordBreak: "break-word" }}>{selectedUser.phase}</div>
                     </div>
                     <div>
                       <div style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Documents</div>
                       <div style={{ fontSize: 13, color: "#0A1628", fontWeight: 500 }}>{selectedUser.docs || 0}</div>
                     </div>
-                    <div style={{ gridColumn: "span 2" }}>
+                    <div style={{ gridColumn: "1 / -1" }}>
                       <div style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>User Role</div>
                       <div style={{ fontSize: 13, color: "#0A1628", fontWeight: 500 }}>{selectedUser.role || 'user'}</div>
                     </div>
