@@ -805,7 +805,7 @@ const AdminPanel = ({ onNavigate }) => {
                               dt[selectedDocTypeForFields].primaryColor = e.target.value;
                               setSettings({ ...settings, documentThemes: dt });
                             }}
-                            style={{ flex: 1, padding: "8px 12px", border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 13, outline: "none", background: "white", height: 40, boxSizing: "border-box" }}
+                            style={{ flex: 1, minWidth: 0, padding: "8px 12px", border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 13, outline: "none", background: "white", height: 40, boxSizing: "border-box" }}
                           />
                         </div>
                       </div>
