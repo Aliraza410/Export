@@ -1647,21 +1647,7 @@ app.get('/api/exports/active', authMiddleware, async (req, res) => {
 });
 
 // Admin endpoints
-app.get('/api/admin/users', authMiddleware, async (req, res) => {
-  try {
-    if (req.user.role !== "admin") return res.status(403).json({ error: "Forbidden" });
-    const users = await prisma.user.findMany({
-      include: {
-        _count: { select: { documents: true } }
-      },
-      orderBy: { joinedAt: 'desc' }
-    });
-    res.json(users);
-  } catch (err) {
-    console.error("Failed to fetch admin users", err);
-    res.status(500).json({ error: "Failed to fetch users" });
-  }
-});
+
 
 app.get('/api/admin/exports', authMiddleware, async (req, res) => {
   try {
@@ -2114,15 +2100,29 @@ app.get('/api/admin/users', authMiddleware, adminMiddleware, async (req, res) =>
       orderBy: { joinedAt: 'desc' }
     });
 
+    const settings = getEstimatorSettings();
+    const phases = settings.exportGuidancePhases || [
+        { title: "Phase 1: Setup", steps: Array(5).fill({}) },
+        { title: "Phase 2: Buyers", steps: Array(5).fill({}) },
+        { title: "Phase 3: Financials", steps: Array(5).fill({}) },
+        { title: "Phase 4: Shipping", steps: Array(5).fill({}) },
+        { title: "Phase 5: Clearance", steps: Array(5).fill({}) }
+    ];
+
     const formattedUsers = users.map(user => {
-      let phase = "Phase 1: Setup";
+      let phase = phases.length > 0 ? phases[0].title : "Phase 1: Setup";
       if (user.registrations && user.registrations.length > 0 && user.registrations[0].steps) {
         const steps = user.registrations[0].steps;
         const done = Object.values(steps).filter(Boolean).length;
-        if (done >= 20) phase = "Phase 5: Clearance";
-        else if (done >= 15) phase = "Phase 4: Shipping";
-        else if (done >= 10) phase = "Phase 3: Financials";
-        else if (done >= 5) phase = "Phase 2: Buyers";
+        
+        let stepsAccumulated = 0;
+        for (let i = 0; i < phases.length; i++) {
+           const p = phases[i];
+           if (done >= stepsAccumulated) {
+             phase = p.title || `Phase ${p.num || i + 1}`;
+           }
+           stepsAccumulated += (p.steps ? p.steps.length : 5);
+        }
       }
       return {
         id: user.id,
