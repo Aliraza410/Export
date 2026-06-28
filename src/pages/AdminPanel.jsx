@@ -250,7 +250,7 @@ const AdminPanel = ({ onNavigate }) => {
                       </div>
                       <Badge color={user.color}>{user.status}</Badge>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#475569", marginBottom: 14 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12, color: "#475569", marginBottom: 14 }}>
                       <div><span style={{ color: "#9CA3AF" }}>Phase:</span> {user.phase}</div>
                       <div><span style={{ color: "#9CA3AF" }}>Docs:</span> <span style={{ fontWeight: 600 }}>{user._count?.documents || user.docs || 0}</span></div>
                     </div>
