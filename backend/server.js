@@ -2112,16 +2112,27 @@ app.get('/api/admin/users', authMiddleware, adminMiddleware, async (req, res) =>
     const formattedUsers = users.map(user => {
       let phase = phases.length > 0 ? phases[0].title : "Phase 1: Setup";
       if (user.registrations && user.registrations.length > 0 && user.registrations[0].steps) {
-        const steps = user.registrations[0].steps;
-        const done = Object.values(steps).filter(Boolean).length;
+        const stepsMap = user.registrations[0].steps || {};
         
-        let stepsAccumulated = 0;
+        let foundIncomplete = false;
         for (let i = 0; i < phases.length; i++) {
-           const p = phases[i];
-           if (done >= stepsAccumulated) {
+          const p = phases[i];
+          if (!p.steps || p.steps.length === 0) continue;
+          
+          for (let j = 0; j < p.steps.length; j++) {
+             const stepTitle = p.steps[j].title;
+             if (!stepsMap[stepTitle]) {
+                phase = p.title || `Phase ${p.num || i + 1}`;
+                foundIncomplete = true;
+                break;
+             }
+          }
+          if (foundIncomplete) break;
+          
+          // If all steps completed, show the last phase
+          if (i === phases.length - 1 && !foundIncomplete) {
              phase = p.title || `Phase ${p.num || i + 1}`;
-           }
-           stepsAccumulated += (p.steps ? p.steps.length : 5);
+          }
         }
       }
       return {
